@@ -103,6 +103,7 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
 
     // If we are in swap context, do not redisplay the message data
     // Instead, ensure they are identical with what was previously displayed
+#if defined(HAVE_SWAP)
     if (G_called_from_swap) {
         if (G_swap_response_ready) {
             // Safety against trying to make the app sign multiple TX
@@ -128,7 +129,9 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
         }
 
         return 0;
-    } else {
+    } else
+#endif /* HAVE_SWAP */
+    {
         return ui_display_transaction();
     }
 }
