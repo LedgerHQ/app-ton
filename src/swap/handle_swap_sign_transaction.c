@@ -136,14 +136,14 @@ bool swap_check_validity() {
         os_sched_exit(0);
     }
 
-    if ((G_context.tx_info.transaction.hints_type == TRANSACTION_COMMENT)
-     && (G_context.tx_info.transaction.hints_len != 0)) {
+    if ((G_context.tx_info.transaction.hints_type == TRANSACTION_COMMENT) &&
+        (G_context.tx_info.transaction.hints_len != 0)) {
         PRINTF("Hint length %d refused\n", G_context.tx_info.transaction.hints_len);
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);
-    } else if ((G_context.tx_info.transaction.hints_type != TRANSACTION_COMMENT)
-            && (G_context.tx_info.transaction.hints_type != TRANSACTION_TRANSFER_JETTON)) {
+    } else if ((G_context.tx_info.transaction.hints_type != TRANSACTION_COMMENT) &&
+               (G_context.tx_info.transaction.hints_type != TRANSACTION_TRANSFER_JETTON)) {
         PRINTF("Wrong operation %d\n", G_context.tx_info.transaction.hints_type);
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
@@ -185,7 +185,7 @@ bool swap_check_validity() {
 
     char encoded_address[G_ADDRESS_LEN];
     uint8_t decoded_address[ADDRESS_LEN] = {0};
-    address_t *recipient = NULL;
+    address_t* recipient = NULL;
 
     /*
      *  XXX:

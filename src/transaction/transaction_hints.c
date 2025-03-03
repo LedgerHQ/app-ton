@@ -134,7 +134,8 @@ bool process_hints(transaction_t* tx) {
 
                 SAFE(jetton_get_wallet_address(jetton_id, &owner, &jetton_wallet));
 
-                if (memcmp(jetton_wallet.hash, G_context.tx_info.transaction.to.hash, HASH_LEN) != 0) {
+                if (memcmp(jetton_wallet.hash, G_context.tx_info.transaction.to.hash, HASH_LEN) !=
+                    0) {
                     return false;
                 }
 

@@ -20,15 +20,12 @@
 #define ADDRESS_BASE64_LENGTH  48
 #define ADDRESS_DECODED_LENGTH 36
 
-
 /**
  * @brief Retrieve address hash according to given derivation path.
  */
-static bool swap_get_addr_hash_from_path(
-    const check_address_parameters_t * const params,
-    uint8_t *hash,
-    size_t hash_len
-) {
+static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const params,
+                                         uint8_t *hash,
+                                         size_t hash_len) {
     uint8_t bip32_path_len;
     uint32_t bip32_path[MAX_BIP32_PATH];
     bool ret = false;
@@ -92,7 +89,7 @@ static bool swap_decode_address(const char *address, uint8_t *decoded, size_t si
     }
 
     result = base64url_decode(base64url, ADDRESS_BASE64_LENGTH, decoded, size);
-    if (result != (int)size) {
+    if (result != (int) size) {
         PRINTF("%d\n", result);
         goto out;
     }
@@ -145,10 +142,8 @@ static bool swap_check_address_flag(uint8_t flag) {
  *
  * @return true if addresses match, false otherwise
  */
-static bool swap_check_address_consistency(
-    const check_address_parameters_t * const params,
-    const uint8_t *const hash
-) {
+static bool swap_check_address_consistency(const check_address_parameters_t *const params,
+                                           const uint8_t *const hash) {
     uint8_t decoded[ADDRESS_DECODED_LENGTH];
     size_t len;
     uint8_t flag;
@@ -281,7 +276,6 @@ void swap_handle_check_address(check_address_parameters_t *params) {
         }
     }
 #endif
-
 
     if (!swap_check_address_consistency(params, hash)) {
         return;
