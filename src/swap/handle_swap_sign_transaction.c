@@ -14,16 +14,16 @@
 #include "base64.h"
 #include "format_address.h"
 #include "transaction_hints.h"
+#include "swap_error_code_helpers.h"
 
-// Error codes for swap, to be moved in SDK
-#define ERROR_INTERNAL                0x00
-#define ERROR_WRONG_AMOUNT            0x01
-#define ERROR_WRONG_DESTINATION       0x02
-#define ERROR_WRONG_FEES              0x03
-#define ERROR_WRONG_METHOD            0x04
-#define ERROR_CROSSCHAIN_WRONG_MODE   0x05
-#define ERROR_CROSSCHAIN_WRONG_METHOD 0x06
-#define ERROR_GENERIC                 0xFF
+typedef enum swap_application_specific_error_code_e {
+    ERR_NONE = 0,
+    ERR_BLIND_OPERATION = 1,
+    ERR_WRONG_OPERATION = 2,
+    ERR_HINT_LENGTH = 3,
+    ERR_AMOUNT_MAX = 4,
+    ERR_CAST_FAIL = 5,
+} swap_application_specific_error_code_t;
 
 typedef struct swap_validated_s {
     bool initialized;
@@ -35,9 +35,6 @@ typedef struct swap_validated_s {
 } swap_validated_t;
 
 static swap_validated_t G_swap_validated;
-
-// Save the BSS address where we will write the return value when finished
-static uint8_t* G_swap_sign_return_value_address;
 
 // Save the data validated during the Exchange app flow
 bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
@@ -111,9 +108,6 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
     // Full reset the global variables
     os_explicit_zero_BSS_segment();
 
-    // Keep the address at which we'll reply the signing status
-    G_swap_sign_return_value_address = &params->result;
-
     // Commit from stack to global data, params becomes tainted but we won't access it anymore
     memcpy(&G_swap_validated, &swap_validated, sizeof(swap_validated));
     return true;
@@ -124,57 +118,59 @@ bool swap_check_validity() {
 
     if (!G_swap_validated.initialized) {
         PRINTF("Swap structure is not initialized\n");
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_simple(SW_SWAP_FAILURE, SWAP_EC_ERROR_INTERNAL, ERR_NONE);
     }
 
     if (G_context.tx_info.transaction.is_blind) {
         PRINTF("Blind operation not allowed in swap mode\n");
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_simple(SW_SWAP_FAILURE, SWAP_EC_ERROR_WRONG_METHOD, ERR_BLIND_OPERATION);
     }
 
     if (G_context.tx_info.transaction.hints_type != TRANSACTION_COMMENT) {
         PRINTF("Wrong operation %d\n", G_context.tx_info.transaction.hints_type);
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_with_string(SW_SWAP_FAILURE,
+                                    SWAP_EC_ERROR_WRONG_METHOD,
+                                    ERR_WRONG_OPERATION,
+                                    "%d",
+                                    G_context.tx_info.transaction.hints_type);
     } else if (G_context.tx_info.transaction.hints_len != 0) {
         PRINTF("Hint length %d refused\n", G_context.tx_info.transaction.hints_len);
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_with_string(SW_SWAP_FAILURE,
+                                    SWAP_EC_ERROR_WRONG_METHOD,
+                                    ERR_HINT_LENGTH,
+                                    "%d",
+                                    G_context.tx_info.transaction.hints_len);
     } else {
         PRINTF("Valid operation %d\n", G_context.tx_info.transaction.hints_type);
     }
 
     if (G_context.tx_info.transaction.send_mode & 128) {
         PRINTF("Amount MAX is refused\n");
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_simple(SW_SWAP_FAILURE, SWAP_EC_ERROR_WRONG_AMOUNT, ERR_AMOUNT_MAX);
     }
 
-    if (G_swap_validated.amount_length != G_context.tx_info.transaction.value_len) {
-        PRINTF("Amount length does not match, promised %d, received %d\n",
-               G_swap_validated.amount_length,
-               G_context.tx_info.transaction.value_len);
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
-    } else if (memcmp(G_swap_validated.amount,
-                      G_context.tx_info.transaction.value_buf,
-                      G_swap_validated.amount_length) != 0) {
+    if ((G_swap_validated.amount_length != G_context.tx_info.transaction.value_len) ||
+        (memcmp(G_swap_validated.amount,
+                G_context.tx_info.transaction.value_buf,
+                G_swap_validated.amount_length) != 0)) {
         PRINTF("Amount does not match, promised %.*H, received %.*H\n",
                G_swap_validated.amount_length,
                G_swap_validated.amount,
-               G_swap_validated.amount_length,
+               G_context.tx_info.transaction.value_len,
                G_context.tx_info.transaction.value_buf);
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+
+        buffer_t buffers_to_send[] = {
+            {.size = 1, .ptr = &G_swap_validated.amount_length},
+            {.size = G_swap_validated.amount_length, .ptr = G_swap_validated.amount},
+            {.size = 1, .ptr = &G_context.tx_info.transaction.value_len},
+            {.size = G_context.tx_info.transaction.value_len,
+             .ptr = G_context.tx_info.transaction.value_buf},
+        };
+        send_swap_error_with_buffers(SW_SWAP_FAILURE,
+                                     SWAP_EC_ERROR_WRONG_METHOD,
+                                     ERR_NONE,
+                                     buffers_to_send,
+                                     ARRAYLEN(buffers_to_send));
     } else {
         PRINTF("Amounts match %.*H\n",
                G_context.tx_info.transaction.value_len,
@@ -190,9 +186,7 @@ bool swap_check_validity() {
                              decoded_address,
                              sizeof(decoded_address))) {
         PRINTF("!address_to_friendly\n");
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_simple(SW_SWAP_FAILURE, SWAP_EC_ERROR_WRONG_DESTINATION, ERR_CAST_FAIL);
     }
     memset(encoded_address, 0, sizeof(encoded_address));
     base64_encode(decoded_address,
@@ -204,20 +198,17 @@ bool swap_check_validity() {
         PRINTF("Destination does not match, promised %s, received %s\n",
                G_swap_validated.recipient,
                encoded_address);
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
+        send_swap_error_with_string(SW_SWAP_FAILURE,
+                                    SWAP_EC_ERROR_WRONG_DESTINATION,
+                                    ERR_NONE,
+                                    "%s != %s",
+                                    G_swap_validated.recipient,
+                                    encoded_address);
     } else {
         PRINTF("Destination %s is valid\n", encoded_address);
     }
 
     return true;
-}
-
-void __attribute__((noreturn)) swap_finalize_exchange_sign_transaction(bool is_success) {
-    PRINTF("Returning to Exchange with status %d\n", is_success);
-    *G_swap_sign_return_value_address = is_success;
-    os_lib_end();
 }
 
 #endif  // HAVE_SWAP
