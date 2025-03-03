@@ -190,7 +190,7 @@ bool swap_check_validity() {
     /*
      *  XXX:
      *   In case of Jetton transfer, transaction `to` address is the sender jetton wallet address.
-     *   Recipent address is the second hints in message hints.
+     *   Recipient address is the second hints in message hints.
      */
 
     if (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON) {
