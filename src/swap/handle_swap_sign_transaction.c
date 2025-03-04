@@ -201,6 +201,18 @@ bool swap_check_validity() {
         recipient = &G_context.tx_info.transaction.to;
     }
 
+    /*
+     * XXX:
+     *  Shall not happened as the transaction type is check earlier, thus, recipient address
+     *  is either message `to` or message hint[1] (in case of Jetton transfer).
+     */
+    if (recipient == NULL) {
+        PRINTF("Missing recipient address\n");
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
+
     if (!address_to_friendly(recipient->chain,
                              recipient->hash,
                              G_context.tx_info.transaction.bounce,
