@@ -23,6 +23,8 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include <os_utils.h>
+
 #include "common/bits.h"
 #include "common/cell.h"
 #include "common/types.h"
@@ -36,11 +38,9 @@
         return false; \
     }
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-
 typedef struct {
     uint8_t master_hash[HASH_LEN];
-    char name[JETTON_NAME_MAX_SIZE]; /* Fixme: should be ticker max len ? i.e. 16 ? */
+    char name[JETTON_NAME_MAX_SIZE];
     CellRef_t code;
     uint8_t master_workchain;
     uint8_t decimals;
@@ -289,7 +289,7 @@ static bool jetton_state_assembler_dispatcher(CellRef_t *out,
 }
 
 static bool jetton_get_id_by_name(const char *name, uint8_t *id) {
-    for (uint8_t idx = 0U; idx < ARRAY_SIZE(jettons); idx++) {
+    for (uint8_t idx = 0U; idx < ARRAYLEN(jettons); idx++) {
         if (strncmp(jettons[idx].name, name, JETTON_NAME_MAX_SIZE) == 0) {
             *id = idx;
             return true;
@@ -303,7 +303,7 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
     CellRef_t state_init;
     address_t master;
 
-    if (jetton_id > ARRAY_SIZE(jettons)) {
+    if (jetton_id > ARRAYLEN(jettons)) {
         return false;
     }
 
@@ -333,7 +333,7 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
 }
 
 const char *jetton_get_name(size_t jetton_id) {
-    if (jetton_id > ARRAY_SIZE(jettons)) {
+    if (jetton_id > ARRAYLEN(jettons)) {
         return "";
     }
 
@@ -341,7 +341,7 @@ const char *jetton_get_name(size_t jetton_id) {
 }
 
 uint8_t jetton_get_decimals(size_t jetton_id) {
-    if (jetton_id > ARRAY_SIZE(jettons)) {
+    if (jetton_id > ARRAYLEN(jettons)) {
         return 0U;
     }
 
