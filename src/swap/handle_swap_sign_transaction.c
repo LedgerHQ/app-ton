@@ -28,7 +28,7 @@
 typedef struct swap_validated_s {
     bool initialized;
     uint8_t decimals;
-    char ticker[MAX_SWAP_TOKEN_LENGTH];
+    char ticker[MAX_TICKER_LEN];
     uint8_t amount_length;
     uint8_t amount[MAX_VALUE_BYTES_LEN];
     char recipient[G_ADDRESS_LEN];

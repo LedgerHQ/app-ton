@@ -227,7 +227,7 @@ out:
 void swap_handle_check_address(check_address_parameters_t *params) {
     uint8_t decimals __attribute__((unused));
     uint8_t hash[HASH_LEN] = {0};
-    char ticker[MAX_SWAP_TOKEN_LENGTH] = {0};
+    char ticker[MAX_TICKER_LEN] = {0};
 
     PRINTF("Inside Ton swap_handle_check_address\n");
 
