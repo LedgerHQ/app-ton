@@ -332,20 +332,22 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
     return true;
 }
 
-const char *jetton_get_name(size_t jetton_id) {
+bool jetton_get_name(size_t jetton_id, const char **name) {
     if (jetton_id > ARRAYLEN(jettons)) {
-        return "";
+        return false;
     }
 
-    return jettons[jetton_id].name;
+    *name = jettons[jetton_id].name;
+    return true;
 }
 
-uint8_t jetton_get_decimals(size_t jetton_id) {
+bool jetton_get_decimals(size_t jetton_id, uint8_t *decimals) {
     if (jetton_id > ARRAYLEN(jettons)) {
-        return 0U;
+        return false;
     }
 
-    return jettons[jetton_id].decimals;
+    *decimals = jettons[jetton_id].decimals;
+    return true;
 }
 
 bool jetton_get_wallet_address_by_name(const char *jetton_ticker,

@@ -40,19 +40,21 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
  * @brief Retrieve Jetton name (ticker).
  *
  * @param jetton_id Jetton identifier, use as index for hardcoded jettons table
+ * @param name retrieved jetton name
  *
- * @return jetton name c string, empty string if jetton_id isn't valid.
+ * @return true if jetton_id is valid, false otherwise
  */
-const char *jetton_get_name(size_t jetton_id);
+bool jetton_get_name(size_t jetton_id, const char **name);
 
 /**
  * @brief Retrieve Jetton decimals.
  *
  * @param jetton_id Jetton identifier, use as index for hardcoded jettons table
+ * @param decimals jettons decimals
  *
- * @return jetton decimal, 0 if jetton_id isn't valid.
+ * @return true if jetton_id is valid, false otherwise
  */
-uint8_t jetton_get_decimals(size_t jetton_id);
+bool jetton_get_decimals(size_t jetton_id, uint8_t *decimals);
 
 /**
  * @brief Compute Jetton wallet address.
