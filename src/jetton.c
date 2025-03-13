@@ -304,14 +304,17 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
     address_t master;
 
     if (jetton_id > ARRAYLEN(jettons)) {
+        PRINTF("Jetton ID (%u) out of range\n", jetton_id);
         return false;
     }
 
     if (owner == NULL) {
+        PRINTF("Invalid jetton owner account address\n");
         return false;
     }
 
     if (jetton_wallet == NULL) {
+        PRINTF("Invalid argument, jetton wallet return address\n");
         return false;
     }
 
@@ -356,10 +359,12 @@ bool jetton_get_wallet_address_by_name(const char *jetton_ticker,
     uint8_t jetton_id;
 
     if (jetton_ticker == NULL) {
+        PRINTF("Jetton ticker must be provided for jetton wallet address computation\n");
         return false;
     }
 
     if (!jetton_get_id_by_name(jetton_ticker, &jetton_id)) {
+        PRINTF("Jetton ticker (%s) not found\n", jetton_ticker);
         return false;
     }
 
