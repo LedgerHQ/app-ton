@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include <os_utils.h>
+#include <io.h>
 
 #include "common/bits.h"
 #include "common/cell.h"
