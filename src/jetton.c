@@ -301,7 +301,7 @@ static bool jetton_get_id_by_name(const char *name, uint8_t *id) {
 }
 
 bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address_t *jetton_wallet) {
-    CellRef_t state_init;
+    CellRef_t state_init = {0};
     address_t master;
 
     if (jetton_id > ARRAYLEN(jettons)) {

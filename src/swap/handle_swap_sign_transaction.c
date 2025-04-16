@@ -121,7 +121,7 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
     return true;
 }
 
-static address_t *swap_get_tx_recipient_address(void) {
+static address_t* swap_get_tx_recipient_address(void) {
     address_t* recipient = NULL;
 
     /*
@@ -155,7 +155,7 @@ static address_t *swap_get_tx_recipient_address(void) {
     return recipient;
 }
 
-static void swap_get_new_owner_address(address_t *address) {
+static void swap_get_new_owner_address(address_t* address) {
     uint8_t decoded[ADDRESS_DECODED_LENGTH];
 
     PRINTF("Swap recipient address %s\n", G_swap_validated.recipient);
@@ -180,7 +180,7 @@ static void swap_get_new_owner_address(address_t *address) {
  */
 static bool swap_compare_recipient_address(void) {
     bool match = false;
-    address_t *tx_recipient = swap_get_tx_recipient_address();
+    address_t* tx_recipient = swap_get_tx_recipient_address();
     address_t swap_recipient;
 
     swap_get_new_owner_address(&swap_recipient);
@@ -188,11 +188,11 @@ static bool swap_compare_recipient_address(void) {
 #if defined(HAVE_HARDCODED_JETTONS)
     if (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON) {
         address_t jetton_wallet = {0};
+        swap_recipient.chain = tx_recipient->chain;
         jetton_get_wallet_address_by_name(G_swap_validated.ticker, &swap_recipient, &jetton_wallet);
         PRINTF("jetton wallet raw address %.*H\n", HASH_LEN, jetton_wallet.hash);
         match = (memcmp(tx_recipient->hash, jetton_wallet.hash, HASH_LEN) == 0);
-    }
-    else
+    } else
 #endif
     {
         match = (memcmp(tx_recipient->hash, swap_recipient.hash, HASH_LEN) == 0);
@@ -234,7 +234,8 @@ bool swap_check_validity(void) {
 
     if ((strncmp(G_swap_validated.ticker, "TON", sizeof("TON")) == 0) &&
         (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON)) {
-        PRINTF("Wrong operation type %d for native coin swap\n", G_context.tx_info.transaction.hints_type);
+        PRINTF("Wrong operation type %d for native coin swap\n",
+               G_context.tx_info.transaction.hints_type);
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);

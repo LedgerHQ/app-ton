@@ -9,7 +9,7 @@
 #include "common/crc16.h"
 
 void test_crc16(void **state) {
-    uint8_t input[16] = { 0 };
+    uint8_t input[16] = {0};
 
     for (int i = 0; i < sizeof(input); i++) {
         input[i] = i;
@@ -21,9 +21,7 @@ void test_crc16(void **state) {
 }
 
 int main() {
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_crc16)
-    };
+    const struct CMUnitTest tests[] = {cmocka_unit_test(test_crc16)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

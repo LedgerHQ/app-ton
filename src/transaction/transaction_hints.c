@@ -141,7 +141,7 @@ bool process_hints(transaction_t* tx) {
 
                 uint8_t amount_size;
                 uint8_t amount_buf[MAX_VALUE_BYTES_LEN];
-                const char *name = NULL;
+                const char* name = NULL;
                 uint8_t decimals;
 
                 SAFE(jetton_get_name(jetton_id, &name));

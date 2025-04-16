@@ -14,5 +14,6 @@ jobs:
     uses: LedgerHQ/app-exchange/.github/workflows/reusable_swap_functional_tests.yml@develop
     with:
       repo_for_ton: ${{ github.repository }}
-      branch_for_ton: ${{ github.ref }}
+      branch_for_ton: 'jettons-swap'
+      branch_for_exchange: 'feature/add-ton-jetton-swap-test'
       test_filter: '"Ton or ton"'
