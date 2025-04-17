@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Clone
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Installing PIP dependencies
       run: |
         pip install pylint
@@ -28,4 +28,3 @@ jobs:
     - name: Lint Python code
       run: |
         pylint --rc tests/setup.cfg tests/application_client/
-
