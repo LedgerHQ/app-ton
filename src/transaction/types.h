@@ -10,7 +10,7 @@
 
 #define MAX_MEMO_LEN 120
 
-#define TX_INCLUDE_WALLET_OP_BIT 1
+#define TX_INCLUDE_WALLET_OP_BIT      1
 #define TX_INCLUDE_EXTRA_CURRENCY_BIT 2
 
 typedef enum {
@@ -39,20 +39,21 @@ typedef struct {
     uint8_t value_buf[MAX_VALUE_BYTES_LEN];  // big endian transaction value
     uint8_t value_len;                       // length of transaction value
     uint32_t extra_currency_id;              // extra currency id
-    uint8_t extra_currency_amount_buf[MAX_EXTRA_CURRENCY_AMOUNT_BYTES_LEN];  // big endian extra currency amount
-    uint8_t extra_currency_amount_len;                                       // length of extra currency amount
-    bool bounce;                             // bounce
-    uint8_t send_mode;                       // send_mode (1 byte)
-    address_t to;                            // receiver
-    bool has_state_init;                     // true if state_init exists
-    CellRef_t state_init;                    // state_init if exists
-    bool has_payload;                        // true if payload exists
-    CellRef_t payload;                       // payload if exists
-    bool has_hints;                          // true if hints exist
-    uint32_t hints_type;                     // hints type if exists
-    uint16_t hints_len;                      // hints len if exists
-    uint8_t* hints_data;                     // hints data if exists
-    bool is_blind;                           // does transaction require blind signing
+    uint8_t extra_currency_amount_buf[MAX_EXTRA_CURRENCY_AMOUNT_BYTES_LEN];  // big endian extra
+                                                                             // currency amount
+    uint8_t extra_currency_amount_len;  // length of extra currency amount
+    bool bounce;                        // bounce
+    uint8_t send_mode;                  // send_mode (1 byte)
+    address_t to;                       // receiver
+    bool has_state_init;                // true if state_init exists
+    CellRef_t state_init;               // state_init if exists
+    bool has_payload;                   // true if payload exists
+    CellRef_t payload;                  // payload if exists
+    bool has_hints;                     // true if hints exist
+    uint32_t hints_type;                // hints type if exists
+    uint16_t hints_len;                 // hints len if exists
+    uint8_t* hints_data;                // hints data if exists
+    bool is_blind;                      // does transaction require blind signing
     HintHolder_t hints;
     char title[32];
     char action[32];

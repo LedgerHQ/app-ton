@@ -34,11 +34,15 @@ bool hash_tx(transaction_ctx_t *ctx) {
 
         BitString_t ec_bits;
         BitString_init(&ec_bits);
-        BitString_storeUint(&ec_bits, 0b10, 2); // hashmap label long
-        BitString_storeUint(&ec_bits, 32, 6); // hashmap label length
-        BitString_storeUint(&ec_bits, ctx->transaction.extra_currency_id, 32); // extra currency id
-        BitString_storeUint(&ec_bits, ctx->transaction.extra_currency_amount_len, 5); // extra currency amount length
-        BitString_storeBuffer(&ec_bits, ctx->transaction.extra_currency_amount_buf, ctx->transaction.extra_currency_amount_len);
+        BitString_storeUint(&ec_bits, 0b10, 2);  // hashmap label long
+        BitString_storeUint(&ec_bits, 32, 6);    // hashmap label length
+        BitString_storeUint(&ec_bits, ctx->transaction.extra_currency_id, 32);  // extra currency id
+        BitString_storeUint(&ec_bits,
+                            ctx->transaction.extra_currency_amount_len,
+                            5);  // extra currency amount length
+        BitString_storeBuffer(&ec_bits,
+                              ctx->transaction.extra_currency_amount_buf,
+                              ctx->transaction.extra_currency_amount_len);
 
         if (!hash_Cell(&ec_bits, NULL, 0, &refs[ref_count++])) {
             return false;

@@ -617,7 +617,8 @@ class Transaction:
         self.extra_currency: Optional[ExtraCurrency] = extra_currency
 
     def header_bytes(self) -> bytes:
-        if not self.include_wallet_op or self.subwallet_id is not None or self.extra_currency is not None:
+        if (not self.include_wallet_op or self.subwallet_id is not None
+            or self.extra_currency is not None):
             flags = 0
             if self.include_wallet_op:
                 flags |= 1
@@ -699,7 +700,8 @@ class Transaction:
                                 .store_uint(32, 6)
                                 .store_uint(self.extra_currency.id, 32)
                                 .store_uint(bytelen(self.extra_currency.amount), 5)
-                                .store_uint(self.extra_currency.amount, bytelen(self.extra_currency.amount) * 8)
+                                .store_uint(self.extra_currency.amount,
+                                            bytelen(self.extra_currency.amount) * 8)
                                 .end_cell())
         if self.state_init is None:
             b = b.store_bit(0)

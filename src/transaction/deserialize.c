@@ -77,10 +77,18 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
         }
 
         tx->extra_currency_id = extra_currencies[ec_idx].id;
-        SAFE(buffer_read_varuint(buf, &tx->extra_currency_amount_len, tx->extra_currency_amount_buf, MAX_EXTRA_CURRENCY_AMOUNT_BYTES_LEN),
+        SAFE(buffer_read_varuint(buf,
+                                 &tx->extra_currency_amount_len,
+                                 tx->extra_currency_amount_buf,
+                                 MAX_EXTRA_CURRENCY_AMOUNT_BYTES_LEN),
              EXTRA_CURRENCY_PARSING_ERROR);
 
-        add_hint_amount(&tx->hints, "Extra currency", extra_currencies[ec_idx].name, tx->extra_currency_amount_buf, tx->extra_currency_amount_len, extra_currencies[ec_idx].decimals);
+        add_hint_amount(&tx->hints,
+                        "Extra currency",
+                        extra_currencies[ec_idx].name,
+                        tx->extra_currency_amount_buf,
+                        tx->extra_currency_amount_len,
+                        extra_currencies[ec_idx].decimals);
     }
     SAFE(buffer_read_address(buf, &tx->to), TO_PARSING_ERROR);
     SAFE(buffer_read_bool(buf, &tx->bounce), BOUNCE_PARSING_ERROR);
