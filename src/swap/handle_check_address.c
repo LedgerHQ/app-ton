@@ -37,7 +37,7 @@ static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const
 
     if (params->address_parameters == NULL) {
         PRINTF("derivation path expected\n");
-        goto out;
+        return false;
     }
 
     PRINTF("address_parameters %.*H\n",
@@ -46,7 +46,7 @@ static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const
 
     if (get_public_key_helper(0, &cdata, &bip32_path_len, bip32_path, &pk_info) != 0) {
         PRINTF("Failed to read public key\n");
-        goto out;
+        return false;
     }
 
     PRINTF("Derived on path %.*H\n", 4 * bip32_path_len, bip32_path);
@@ -57,8 +57,6 @@ static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const
                          pk_info.is_v3r2,
                          hash,
                          hash_len);
-
-out:
     return ret;
 }
 
@@ -76,23 +74,20 @@ out:
 bool swap_decode_address(const char *address, uint8_t *decoded, size_t size) {
     char base64url[ADDRESS_BASE64_LENGTH];
     int result;
-    bool ret = false;
 
     result = base64_to_base64url(address, ADDRESS_BASE64_LENGTH, base64url, ADDRESS_BASE64_LENGTH);
     if (result < 0) {
         PRINTF("Failed to convert to base64url\n");
-        goto out;
+        return false;
     }
 
     result = base64url_decode(base64url, ADDRESS_BASE64_LENGTH, decoded, size);
     if (result != (int) size) {
         PRINTF("%d\n", result);
-        goto out;
+        return false;
     }
 
-    ret = true;
-out:
-    return ret;
+    return true;
 }
 
 /**
@@ -232,6 +227,7 @@ void swap_handle_check_address(check_address_parameters_t *params) {
     PRINTF("Address from derivation path: %.*H\n", HASH_LEN, hash);
 
     if (!swap_check_address_consistency(params, hash)) {
+        PRINTF("Check address consistency failed\n");
         return;
     }
 
