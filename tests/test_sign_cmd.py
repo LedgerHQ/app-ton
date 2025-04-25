@@ -370,6 +370,9 @@ def test_sign_tx_clear_jetton(firmware, backend, navigator, test_name):
         "EQD5Hgvvs8iyeH_mwcgAdtz9eap3de8EBdn3dgv6NQaMSFxZ",
         "EQC5LlcR2UXlqVrOJUqrF4YVTHVweuYavC_u2ia9VKDNIPEa",
         "EQBR8_qGiqF2KhYwPnwGU6kMjA0P53bRhdNX4UH_YJUYhUDL",
+        "EQBCgyCGsBV5mQetCF3NWcRfW_uI11KT1zJUwRoXLWk8N-LG",
+        "EQDXTn8IvuNJTkDnTN9XQUZOqEYuYNhit1LgBTBnkJk55Vjj",
+        "EQA3M981CTXeFtkeurrOs8Z-jcFwlHpkJO5DrwMC7zn0U-La",
     ]
 
     # Enable blind signing and expert mode
