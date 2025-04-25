@@ -238,9 +238,8 @@ bool swap_check_validity(void) {
         os_sched_exit(0);
     }
 
-    
     uint8_t amount_length = G_context.tx_info.transaction.value_len;
-    uint8_t *amount = G_context.tx_info.transaction.value_buf;
+    uint8_t* amount = G_context.tx_info.transaction.value_buf;
     // Depending on the hints type, we need to get the proper amount from the transaction
     if (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON) {
         amount_length = G_context.tx_info.transaction.hints.hints[0].amount.value_len;
@@ -254,9 +253,7 @@ bool swap_check_validity(void) {
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);
-    } else if (memcmp(G_swap_validated.amount,
-                      amount,
-                      G_swap_validated.amount_length) != 0) {
+    } else if (memcmp(G_swap_validated.amount, amount, G_swap_validated.amount_length) != 0) {
         PRINTF("Amount does not match, promised %.*H, received %.*H\n",
                G_swap_validated.amount_length,
                G_swap_validated.amount,
@@ -266,9 +263,7 @@ bool swap_check_validity(void) {
         // unreachable
         os_sched_exit(0);
     } else {
-        PRINTF("Amounts match %.*H\n",
-            amount_length,
-            amount);
+        PRINTF("Amounts match %.*H\n", amount_length, amount);
     }
 
     if (!swap_compare_recipient_address()) {
