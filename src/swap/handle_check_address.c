@@ -160,6 +160,8 @@ static bool swap_check_address_consistency(const check_address_parameters_t *con
         goto out;
     }
 
+    PRINTF("Address to check %s (base64) \n", params->address_to_check);
+
     if (!swap_decode_address(params->address_to_check, decoded, ADDRESS_DECODED_LENGTH)) {
         PRINTF("Failed to decode\n");
         goto out;
@@ -184,6 +186,8 @@ static bool swap_check_address_consistency(const check_address_parameters_t *con
         PRINTF("Unknown workchain_id refused: %d\n", workchain_id);
         goto out;
     }
+
+    PRINTF("Address to check %.*H\n", HASH_LEN, account_hash);
 
     if (memcmp(account_hash, hash, HASH_LEN) != 0) {
         PRINTF("Different account id value: received %.*H, derived %.*H\n",
@@ -225,7 +229,7 @@ void swap_handle_check_address(check_address_parameters_t *params) {
         return;
     }
 
-    PRINTF("address to check %.*H\n", HASH_LEN, hash);
+    PRINTF("Address from derivation path: %.*H\n", HASH_LEN, hash);
 
     if (!swap_check_address_consistency(params, hash)) {
         return;

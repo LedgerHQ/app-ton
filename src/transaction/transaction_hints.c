@@ -149,6 +149,12 @@ bool process_hints(transaction_t* tx) {
                 SAFE(buffer_read_varuint(&buf, &amount_size, amount_buf, MAX_VALUE_BYTES_LEN));
                 BitString_storeCoinsBuf(&bits, amount_buf, amount_size);
 
+                PRINTF("Jetton id: %u\n", jetton_id);
+                PRINTF("Jetton name: %s\n", name);
+                PRINTF("Jetton decimals: %u\n", decimals);
+                PRINTF("Jetton amount_size: %u\n", amount_size);
+                PRINTF("Jetton amount: %.*H\n", amount_size, amount_buf);
+
                 add_hint_amount(&tx->hints,
                                 "Jetton amount",
                                 name,
