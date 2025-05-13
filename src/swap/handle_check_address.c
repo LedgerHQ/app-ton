@@ -20,18 +20,16 @@
  * @brief Retrieve address hash according to given derivation path.
  */
 static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const params,
-                                         uint8_t *hash,
-                                         size_t hash_len) {
+                                         uint8_t hash[HASH_LEN]) {
     uint8_t bip32_path_len;
     uint32_t bip32_path[MAX_BIP32_PATH];
-    bool ret = false;
     buffer_t cdata = {
         .ptr = params->address_parameters,
         .size = params->address_parameters_length,
         .offset = 0UL,
     };
     pubkey_ctx_t pk_info = {
-        .subwallet_id = 698983191,
+        .subwallet_id = DEFAULT_SUBWALLET_ID,
         .is_v3r2 = false,
     };
 
@@ -52,12 +50,11 @@ static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const
     PRINTF("Derived on path %.*H\n", 4 * bip32_path_len, bip32_path);
     PRINTF("Public key %.*H\n", PUBKEY_LEN, pk_info.raw_public_key);
 
-    ret = pubkey_to_hash(pk_info.raw_public_key,
-                         pk_info.subwallet_id,
-                         pk_info.is_v3r2,
-                         hash,
-                         hash_len);
-    return ret;
+    return pubkey_to_hash(pk_info.raw_public_key,
+                          pk_info.subwallet_id,
+                          pk_info.is_v3r2,
+                          hash,
+                          HASH_LEN);
 }
 
 /**
@@ -71,7 +68,7 @@ static bool swap_get_addr_hash_from_path(const check_address_parameters_t *const
  *
  * @return true if success, false otherwise
  */
-bool swap_decode_address(const char *address, uint8_t *decoded, size_t size) {
+bool swap_decode_address(const char *address, uint8_t decoded[ADDRESS_DECODED_LENGTH]) {
     char base64url[ADDRESS_BASE64_LENGTH];
     int result;
 
@@ -81,8 +78,8 @@ bool swap_decode_address(const char *address, uint8_t *decoded, size_t size) {
         return false;
     }
 
-    result = base64url_decode(base64url, ADDRESS_BASE64_LENGTH, decoded, size);
-    if (result != (int) size) {
+    result = base64url_decode(base64url, ADDRESS_BASE64_LENGTH, decoded, ADDRESS_DECODED_LENGTH);
+    if (result != (int) ADDRESS_DECODED_LENGTH) {
         PRINTF("%d\n", result);
         return false;
     }
@@ -157,7 +154,7 @@ static bool swap_check_address_consistency(const check_address_parameters_t *con
 
     PRINTF("Address to check %s (base64) \n", params->address_to_check);
 
-    if (!swap_decode_address(params->address_to_check, decoded, ADDRESS_DECODED_LENGTH)) {
+    if (!swap_decode_address(params->address_to_check, decoded)) {
         PRINTF("Failed to decode\n");
         goto out;
     }
@@ -220,7 +217,7 @@ void swap_handle_check_address(check_address_parameters_t *params) {
         return;
     }
 
-    if (!swap_get_addr_hash_from_path(params, hash, HASH_LEN)) {
+    if (!swap_get_addr_hash_from_path(params, hash)) {
         return;
     }
 

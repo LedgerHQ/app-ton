@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <inttypes.h>
 
+// Max size of the currently support jetton name (ticker) in bytes
 #define JETTON_NAME_MAX_SIZE 8UL
 
 /**
@@ -44,7 +45,7 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
  *
  * @return true if jetton_id is valid, false otherwise
  */
-bool jetton_get_name(size_t jetton_id, const char **name);
+bool jetton_get_ticker(size_t jetton_id, const char **name);
 
 /**
  * @brief Retrieve Jetton decimals.

@@ -369,6 +369,8 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
 
     explicit_bzero(jetton_wallet, sizeof(address_t));
 
+    // Compute the jetton wallet address from the jetton master
+    // address and the owner address
     memcpy(master.hash, jettons[jetton_id].master_hash, HASH_LEN);
     master.chain = jettons[jetton_id].master_workchain;
 
@@ -384,7 +386,7 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
     return true;
 }
 
-bool jetton_get_name(size_t jetton_id, const char **name) {
+bool jetton_get_ticker(size_t jetton_id, const char **name) {
     if (jetton_id > ARRAYLEN(jettons)) {
         return false;
     }

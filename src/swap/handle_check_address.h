@@ -9,4 +9,4 @@
 #define ADDRESS_BASE64_LENGTH  48
 #define ADDRESS_DECODED_LENGTH 36
 
-bool swap_decode_address(const char *address, uint8_t *decoded, size_t size);
+bool swap_decode_address(const char *address, uint8_t decoded[ADDRESS_DECODED_LENGTH]);
