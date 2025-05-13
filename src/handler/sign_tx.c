@@ -123,8 +123,6 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
         } else {
             // Unreachable due to io_send_sw instant replying and quitting to Exchange in Swap mode
             PRINTF("!swap_check_validity\n");
-            // Failsafe
-            swap_finalize_exchange_sign_transaction(false);
         }
 
         return 0;
