@@ -130,10 +130,8 @@ static address_t* swap_get_tx_recipient_address(bool is_jetton_swap) {
      *   Recipient address is the second hints in message hints.
      */
     if (is_jetton_swap) {
-        if (G_context.tx_info.transaction.hints.hints_count >= 2) {
-            PRINTF("Tx recipient is a jetton wallet address\n");
-            recipient = &G_context.tx_info.transaction.hints.hints[1].address.address;
-        }
+        PRINTF("Tx recipient is a jetton wallet address\n");
+        recipient = &G_context.tx_info.transaction.hints.hints[1].address.address;
     } else {
         recipient = &G_context.tx_info.transaction.to;
     }
@@ -222,6 +220,17 @@ bool swap_check_validity(void) {
 
     bool is_jetton_swap =
         strncmp(G_swap_validated.ticker, "TON", sizeof("TON")) == 0 ? false : true;
+
+    if (is_jetton_swap &&
+        ((G_context.tx_info.transaction.hints.hints_count != 2) ||
+         ((N_storage.expert_mode) && ((G_context.tx_info.transaction.hints_len >= 4) &&
+                                      (G_context.tx_info.transaction.hints_len <= 6))))) {
+        PRINTF("Wrong hints_count %d for jetton transfer\n",
+               G_context.tx_info.transaction.hints.hints_count);
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
 
     if (!is_jetton_swap &&
         (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON)) {
