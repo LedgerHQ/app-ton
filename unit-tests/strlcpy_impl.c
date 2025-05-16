@@ -6,8 +6,7 @@ size_t strlcpy(char *dst, const char *src, size_t n) {
 
     if (n != 0) {
         for (; --n != 0; p++, src++) {
-            if ((*p = *src) == '\0')
-                return p - dst;
+            if ((*p = *src) == '\0') return p - dst;
         }
         *p = '\0';
     }

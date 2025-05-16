@@ -10,9 +10,9 @@
 #include "common/format_bigint.h"
 
 void test_with_ticker(void **state) {
-    uint8_t input[2] = { 0x01, 0x00 };
+    uint8_t input[2] = {0x01, 0x00};
 
-    char output[16] = { 0 };
+    char output[16] = {0};
 
     assert_true(amountToString(input, sizeof(input), 0, "TON", output, sizeof(output)));
 
@@ -22,9 +22,9 @@ void test_with_ticker(void **state) {
 }
 
 void test_no_ticker(void **state) {
-    uint8_t input[4] = { 0x05, 0xf5, 0xe1, 0x00 };
+    uint8_t input[4] = {0x05, 0xf5, 0xe1, 0x00};
 
-    char output[16] = { 0 };
+    char output[16] = {0};
 
     assert_true(amountToString(input, sizeof(input), 9, "", output, sizeof(output)));
 
@@ -34,9 +34,9 @@ void test_no_ticker(void **state) {
 }
 
 void test_zero(void **state) {
-    uint8_t input[16] = { 0 };
+    uint8_t input[16] = {0};
 
-    char output[2] = { 0 };
+    char output[2] = {0};
 
     assert_true(amountToString(input, sizeof(input), 9, "", output, sizeof(output)));
 
@@ -46,11 +46,9 @@ void test_zero(void **state) {
 }
 
 int main() {
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_with_ticker),
-        cmocka_unit_test(test_no_ticker),
-        cmocka_unit_test(test_zero)
-    };
+    const struct CMUnitTest tests[] = {cmocka_unit_test(test_with_ticker),
+                                       cmocka_unit_test(test_no_ticker),
+                                       cmocka_unit_test(test_zero)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

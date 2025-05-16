@@ -14,6 +14,8 @@
 #include "base64.h"
 #include "format_address.h"
 #include "transaction_hints.h"
+#include "handle_check_address.h"
+#include "../jetton.h"
 
 // Error codes for swap, to be moved in SDK
 #define ERROR_INTERNAL                0x00
@@ -28,7 +30,7 @@
 typedef struct swap_validated_s {
     bool initialized;
     uint8_t decimals;
-    char ticker[MAX_SWAP_TOKEN_LENGTH];
+    char ticker[MAX_TICKER_LEN];
     uint8_t amount_length;
     uint8_t amount[MAX_VALUE_BYTES_LEN];
     char recipient[G_ADDRESS_LEN];
@@ -88,7 +90,7 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
         }
     }
 
-    // Save recipient
+    // Save recipient address in BASE64
     strlcpy(swap_validated.recipient,
             params->destination_address,
             sizeof(swap_validated.recipient));
@@ -119,7 +121,73 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
     return true;
 }
 
-bool swap_check_validity() {
+static address_t* swap_get_tx_recipient_address(bool is_jetton_swap) {
+    address_t* recipient = NULL;
+
+    /*
+     *  XXX:
+     *   In case of Jetton transfer, transaction `to` address is the sender jetton wallet address.
+     *   Recipient address is the second hints in message hints.
+     */
+    if (is_jetton_swap) {
+        PRINTF("Tx recipient is a jetton wallet address\n");
+        recipient = &G_context.tx_info.transaction.hints.hints[1].address.address;
+    } else {
+        recipient = &G_context.tx_info.transaction.to;
+    }
+
+    /*
+     * XXX:
+     *  Shall not happened as the transaction type is check earlier, thus, recipient address
+     *  is either message `to` or message hint[1] (in case of Jetton transfer).
+     */
+    if (recipient == NULL) {
+        PRINTF("Missing tx recipient address\n");
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
+
+    PRINTF("Tx recipient raw address %.*H\n", HASH_LEN, recipient->hash);
+
+    return recipient;
+}
+
+static void swap_get_new_owner_address(address_t* address) {
+    uint8_t decoded[ADDRESS_DECODED_LENGTH];
+
+    PRINTF("Swap recipient address %s\n", G_swap_validated.recipient);
+    if (!swap_decode_address(G_swap_validated.recipient, decoded)) {
+        PRINTF("Failed to decode recipient address\n");
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
+
+    memcpy(address->hash, &decoded[2], HASH_LEN);
+    PRINTF("Swap recipient raw address %.*H\n", HASH_LEN, address->hash);
+}
+
+/**
+ * @brief Compare recipient address received from swap to transaction recipient address
+ *
+ * From swap/exchange, base64 encoded owner address is received (even for Jetton swap)
+ * From ton transaction:
+ *  - Recipient is `to` address (i.e. new owner) in raw binary for native coin transfer.
+ *  - Recipient is hint[1] and this is the jetton wallet address (new owner) in raw binary.
+ */
+static bool swap_compare_recipient_address(bool is_jetton_swap) {
+    bool match = false;
+    address_t* tx_recipient = swap_get_tx_recipient_address(is_jetton_swap);
+    address_t swap_recipient;
+
+    swap_get_new_owner_address(&swap_recipient);
+    match = (memcmp(tx_recipient->hash, swap_recipient.hash, HASH_LEN) == 0);
+
+    return match;
+}
+
+bool swap_check_validity(void) {
     PRINTF("Inside Ton swap_check_validity\n");
 
     if (!G_swap_validated.initialized) {
@@ -136,19 +204,52 @@ bool swap_check_validity() {
         os_sched_exit(0);
     }
 
-    if (G_context.tx_info.transaction.hints_type != TRANSACTION_COMMENT) {
-        PRINTF("Wrong operation %d\n", G_context.tx_info.transaction.hints_type);
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
-    } else if (G_context.tx_info.transaction.hints_len != 0) {
+    if ((G_context.tx_info.transaction.hints_type == TRANSACTION_COMMENT) &&
+        (G_context.tx_info.transaction.hints_len != 0)) {
         PRINTF("Hint length %d refused\n", G_context.tx_info.transaction.hints_len);
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);
-    } else {
-        PRINTF("Valid operation %d\n", G_context.tx_info.transaction.hints_type);
+    } else if ((G_context.tx_info.transaction.hints_type != TRANSACTION_COMMENT) &&
+               (G_context.tx_info.transaction.hints_type != TRANSACTION_TRANSFER_JETTON)) {
+        PRINTF("Wrong operation %d\n", G_context.tx_info.transaction.hints_type);
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
     }
+
+    bool is_jetton_swap =
+        strncmp(G_swap_validated.ticker, "TON", sizeof("TON")) == 0 ? false : true;
+
+    if (is_jetton_swap &&
+        ((G_context.tx_info.transaction.hints.hints_count != 2) ||
+         ((N_storage.expert_mode) && ((G_context.tx_info.transaction.hints_len >= 4) &&
+                                      (G_context.tx_info.transaction.hints_len <= 6))))) {
+        PRINTF("Wrong hints_count %d for jetton transfer\n",
+               G_context.tx_info.transaction.hints.hints_count);
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
+
+    if (!is_jetton_swap &&
+        (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON)) {
+        PRINTF("Wrong operation type %d for native coin swap\n",
+               G_context.tx_info.transaction.hints_type);
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
+
+    if (is_jetton_swap && (G_context.tx_info.transaction.hints_type == TRANSACTION_COMMENT)) {
+        PRINTF("Wrong operation type %d for Jetton swap\n",
+               G_context.tx_info.transaction.hints_type);
+        io_send_sw(SW_SWAP_FAILURE);
+        // unreachable
+        os_sched_exit(0);
+    }
+
+    PRINTF("Valid operation %d\n", G_context.tx_info.transaction.hints_type);
 
     if (G_context.tx_info.transaction.send_mode & 128) {
         PRINTF("Amount MAX is refused\n");
@@ -157,67 +258,47 @@ bool swap_check_validity() {
         os_sched_exit(0);
     }
 
-    if (G_swap_validated.amount_length != G_context.tx_info.transaction.value_len) {
+    uint8_t amount_length = 0;
+    uint8_t* amount = NULL;
+    // Depending on swap operation, we need to get the proper amount from the transaction
+    if (is_jetton_swap) {
+        amount_length = G_context.tx_info.transaction.hints.hints[0].amount.value_len;
+        amount = G_context.tx_info.transaction.hints.hints[0].amount.value;
+    } else {
+        amount_length = G_context.tx_info.transaction.value_len;
+        amount = G_context.tx_info.transaction.value_buf;
+    }
+
+    if (G_swap_validated.amount_length != amount_length) {
         PRINTF("Amount length does not match, promised %d, received %d\n",
                G_swap_validated.amount_length,
-               G_context.tx_info.transaction.value_len);
+               amount_length);
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);
-    } else if (memcmp(G_swap_validated.amount,
-                      G_context.tx_info.transaction.value_buf,
-                      G_swap_validated.amount_length) != 0) {
+    } else if (memcmp(G_swap_validated.amount, amount, G_swap_validated.amount_length) != 0) {
         PRINTF("Amount does not match, promised %.*H, received %.*H\n",
                G_swap_validated.amount_length,
                G_swap_validated.amount,
                G_swap_validated.amount_length,
-               G_context.tx_info.transaction.value_buf);
+               amount);
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);
     } else {
-        PRINTF("Amounts match %.*H\n",
-               G_context.tx_info.transaction.value_len,
-               G_context.tx_info.transaction.value_buf);
+        PRINTF("Amounts match %.*H\n", amount_length, amount);
     }
 
-    char encoded_address[G_ADDRESS_LEN];
-    uint8_t decoded_address[ADDRESS_LEN] = {0};
-    if (!address_to_friendly(G_context.tx_info.transaction.to.chain,
-                             G_context.tx_info.transaction.to.hash,
-                             G_context.tx_info.transaction.bounce,
-                             false,
-                             decoded_address,
-                             sizeof(decoded_address))) {
-        PRINTF("!address_to_friendly\n");
-        io_send_sw(SW_SWAP_FAILURE);
-        // unreachable
-        os_sched_exit(0);
-    }
-    memset(encoded_address, 0, sizeof(encoded_address));
-    base64_encode(decoded_address,
-                  sizeof(decoded_address),
-                  encoded_address,
-                  sizeof(encoded_address));
-
-    if (strcmp(G_swap_validated.recipient, encoded_address) != 0) {
-        PRINTF("Destination does not match, promised %s, received %s\n",
-               G_swap_validated.recipient,
-               encoded_address);
+    if (!swap_compare_recipient_address(is_jetton_swap)) {
+        PRINTF("Destination does not match\n");
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
         os_sched_exit(0);
     } else {
-        PRINTF("Destination %s is valid\n", encoded_address);
+        PRINTF("Recipient addresses match\n");
     }
 
     return true;
-}
-
-void __attribute__((noreturn)) swap_finalize_exchange_sign_transaction(bool is_success) {
-    PRINTF("Returning to Exchange with status %d\n", is_success);
-    *G_swap_sign_return_value_address = is_success;
-    os_lib_end();
 }
 
 #endif  // HAVE_SWAP
