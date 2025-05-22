@@ -45,11 +45,6 @@ int get_public_key_helper(uint8_t flags,
         return SW_WRONG_DATA_LENGTH;
     }
 
-    if (!check_bip32_path(*bip32_path_len, bip32_path)) {
-        PRINTF("Error SW_BAD_BIP32_PATH\n");
-        return SW_BAD_BIP32_PATH;
-    }
-
     if (crypto_derive_public_key(bip32_path, *bip32_path_len, pk_info->raw_public_key) < 0) {
         PRINTF("Error SW_BAD_STATE\n");
         return SW_BAD_STATE;
@@ -62,7 +57,7 @@ int get_public_key_helper(uint8_t flags,
             return SW_WRONG_DATA_LENGTH;
         }
     } else {
-        pk_info->subwallet_id = 698983191;
+        pk_info->subwallet_id = DEFAULT_SUBWALLET_ID;
         pk_info->is_v3r2 = false;
     }
 
