@@ -148,7 +148,7 @@ static bool swap_check_address_consistency(const check_address_parameters_t *con
         goto out;
     }
 
-    len = strnlen(params->address_to_check, ADDRESS_BASE64_LENGTH);
+    len = strnlen(params->address_to_check, ADDRESS_BASE64_LENGTH + 1);
     if (len != ADDRESS_BASE64_LENGTH) {
         PRINTF("Address to check expected length %d, got %u\n", ADDRESS_BASE64_LENGTH, len);
         goto out;
@@ -212,7 +212,7 @@ void swap_handle_check_address(check_address_parameters_t *params) {
         return;
     }
     PRINTF("Address to check %s\n", params->address_to_check);
-    if (strnlen(params->address_to_check, ADDRESS_BASE64_LENGTH) != ADDRESS_BASE64_LENGTH) {
+    if (strnlen(params->address_to_check, ADDRESS_BASE64_LENGTH + 1) != ADDRESS_BASE64_LENGTH) {
         PRINTF("Address to check expected length %d, not %d\n",
                ADDRESS_BASE64_LENGTH,
                strlen(params->address_to_check));
