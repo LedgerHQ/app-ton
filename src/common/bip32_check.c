@@ -5,7 +5,7 @@
 #include "bip32_check.h"
 
 bool check_bip32_path_len(uint8_t bip32_path_len) {
-    return ((bip32_path_len <= 2) ? false : true);
+    return (bip32_path_len > 2);
 }
 
 bool check_global_bip32_path() {
