@@ -33,6 +33,8 @@ typedef struct swap_validated_s {
     char ticker[MAX_TICKER_LEN];
     uint8_t amount_length;
     uint8_t amount[MAX_VALUE_BYTES_LEN];
+    uint8_t fees_length;
+    uint8_t fees[MAX_VALUE_BYTES_LEN];
     char recipient[G_ADDRESS_LEN];
 } swap_validated_t;
 
@@ -106,6 +108,15 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
     } else {
         swap_validated.amount_length = params->amount_length;
         memcpy(swap_validated.amount, params->amount, params->amount_length);
+    }
+
+    // Save fees
+    if (params->fee_amount_length > sizeof(swap_validated.fees)) {
+        PRINTF("Fees too big\n");
+        return false;
+    } else {
+        swap_validated.fees_length = params->fee_amount_length;
+        memcpy(swap_validated.fees, params->fee_amount, params->fee_amount_length);
     }
 
     swap_validated.initialized = true;
@@ -264,6 +275,21 @@ bool swap_check_validity(void) {
     if (is_jetton_swap) {
         amount_length = G_context.tx_info.transaction.hints.hints[0].amount.value_len;
         amount = G_context.tx_info.transaction.hints.hints[0].amount.value;
+        uint8_t fees_length = G_context.tx_info.transaction.value_len;
+        uint8_t* fees = G_context.tx_info.transaction.value_buf;
+        if ((G_swap_validated.fees_length != fees_length) ||
+            (memcmp(G_swap_validated.fees, fees, G_swap_validated.fees_length) != 0)) {
+            PRINTF("Fees do not match, promised %.*H, received %.*H\n",
+                   G_swap_validated.fees_length,
+                   G_swap_validated.fees,
+                   G_swap_validated.fees_length,
+                   fees);
+            io_send_sw(SW_SWAP_FAILURE);
+            // unreachable
+            os_sched_exit(0);
+        } else {
+            PRINTF("Fees match %.*H\n", fees_length, fees);
+        }
     } else {
         amount_length = G_context.tx_info.transaction.value_len;
         amount = G_context.tx_info.transaction.value_buf;
