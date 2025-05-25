@@ -80,7 +80,9 @@ bool swap_decode_address(const char *address, uint8_t decoded[ADDRESS_DECODED_LE
 
     result = base64url_decode(base64url, ADDRESS_BASE64_LENGTH, decoded, ADDRESS_DECODED_LENGTH);
     if (result != (int) ADDRESS_DECODED_LENGTH) {
-        PRINTF("%d\n", result);
+        PRINTF("Wrong address length %d != %d when base64url decoding \n",
+               result,
+               ADDRESS_DECODED_LENGTH);
         return false;
     }
 
@@ -146,7 +148,7 @@ static bool swap_check_address_consistency(const check_address_parameters_t *con
         goto out;
     }
 
-    len = strlen(params->address_to_check);
+    len = strnlen(params->address_to_check, ADDRESS_BASE64_LENGTH + 1);
     if (len != ADDRESS_BASE64_LENGTH) {
         PRINTF("Address to check expected length %d, got %u\n", ADDRESS_BASE64_LENGTH, len);
         goto out;
@@ -210,7 +212,7 @@ void swap_handle_check_address(check_address_parameters_t *params) {
         return;
     }
     PRINTF("Address to check %s\n", params->address_to_check);
-    if (strlen(params->address_to_check) != ADDRESS_BASE64_LENGTH) {
+    if (strnlen(params->address_to_check, ADDRESS_BASE64_LENGTH + 1) != ADDRESS_BASE64_LENGTH) {
         PRINTF("Address to check expected length %d, not %d\n",
                ADDRESS_BASE64_LENGTH,
                strlen(params->address_to_check));

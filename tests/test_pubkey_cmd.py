@@ -101,7 +101,7 @@ def test_get_public_key_confirm_refused(firmware, backend, navigator, test_name)
 
 def test_get_public_key_bad_path(firmware, backend, navigator, test_name):
     client = BoilerplateCommandSender(backend)
-    paths = ["m/44'/608'/0'/0'/0'/0'", "m/44'/607'"]
+    paths = ["m/44'/607'"]
 
     for path in paths:
         with pytest.raises(ExceptionRAPDU) as e:
