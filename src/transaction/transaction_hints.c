@@ -727,8 +727,8 @@ bool process_hints(transaction_t* tx) {
         add_hint_amount(&tx->hints, "To send from vesting", "TON", amount_buf, amount_size, EXPONENT_SMALLEST_UNIT);
 
         // comment length
-        uint16_t comment_length;
-        SAFE(buffer_read_u16(&buf, &comment_length, BE));
+        uint8_t comment_length;
+        SAFE(buffer_read_u8(&buf, &comment_length));
 
         // comment
         uint8_t comment[120]; // 120 is max comment length

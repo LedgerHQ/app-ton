@@ -665,7 +665,7 @@ class VestingSendMsgCommentPayload(Payload):
             self.sendMode.to_bytes(1, byteorder="big"),
             write_address(self.destination),
             write_varuint(self.value),
-            len(self.comment).to_bytes(2, byteorder="big"),
+            len(self.comment).to_bytes(1, byteorder="big"),
             self.comment.encode("utf-8")
         ])
         return b"".join([
