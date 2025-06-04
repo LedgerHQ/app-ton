@@ -734,6 +734,11 @@ bool process_hints(transaction_t* tx) {
         uint8_t comment[120]; // 120 is max comment length
         SAFE(buffer_read_buffer(&buf, comment, comment_length));
 
+        // Check ASCII
+        if (!check_ascii(comment, comment_length)) {
+            return false;
+        }
+
         // check buf is empty
         CHECK_END();
 
