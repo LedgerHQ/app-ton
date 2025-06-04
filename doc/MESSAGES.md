@@ -15,6 +15,9 @@ This list contains a number of messages that ledger could assemble and display c
 | 0x08 | Jetton DAO vote for proposal | [Jetton DAO vote for proposal message](https://github.com/EmelyanenkoK/jetton_dao/blob/02fed5d124effd57ea50be77044b209ad800a621/contracts/voting.tlb#L61) |
 | 0x09 | Change DNS record | [Change DNS record message](https://github.com/ton-blockchain/dns-contract/blob/d08131031fb659d2826cccc417ddd9b98476f814/func/nft-item.fc#L204) |
 | 0x0A | Token bridge pay for swap | [Token bridge pay for swap message](https://github.com/ton-blockchain/token-bridge-func/blob/3346a901e3e8e1a1e020fac564c845db3220c238/src/func/jetton-bridge/op-codes.fc#L20) |
+| 0x0B | Ton Whales pool deposit | [Stake deposit to Ton Whales pool](https://github.com/tonwhales/ton-nominators/blob/main/sources/modules/op-nominators.fc#L34) |
+| 0x0C | Ton Whales pool withdrawal | [Stake withdrawal from Ton Whales pool](https://github.com/tonwhales/ton-nominators/blob/main/sources/modules/op-nominators.fc#L40) |
+| 0x0D | Send message with comment from vesting | [Send message with comment from vesting](https://github.com/ton-blockchain/vesting-contract/blob/main/contracts/vesting_wallet.fc#L288) |
 
 # 0x00: Message with comment
 
@@ -243,3 +246,50 @@ pay_swap#8 query_id:uint64 swap_id:uint256 = InternalMsgBody;
 | `has_query_id` | 1 | Whether `query_id` is present |
 | `query_id` | 0 or 8 | `query_id` for the message, 0 will be used if `!has_query_id` |
 | `swap_id` | 32 | The swap ID |
+
+# 0x0B: Ton Whales pool deposit
+
+### TL-B
+```
+tonwhales_deposit#7bcd1fef query_id:uint64 gas_limit:Coins = InternalMsgBody;
+```
+
+### Hints
+| Value | Length or type | Description |
+| --- | --- | --- |
+| `query_id` | 64 | `query_id` for the message |
+| `gas_limit` | `varuint` | Gas limit for the transaction |
+
+# 0x0C: Ton Whales pool withdrawal
+
+### TL-B
+```
+tonwhales_withdrawal#da803efd query_id:uint64 gas_limit:Coins amount:Coins = InternalMsgBody;
+```
+
+### Hints
+| Value | Length or type | Description |
+| --- | --- | --- |
+| `query_id` | 64 | `query_id` for the message |
+| `gas_limit` | `varuint` | Gas limit for the transaction |
+| `amount` | `varuint` | Amount to withdraw. Zero for full withdrawal |
+
+# 0x0D Send message with comment from vesting 
+### TL-B
+```
+message#00000000 text:string = CommentMessageBody
+
+vesting_send_msg#a7733acd query_id:uint64 send_mode:uint8 internal_message:^(MessageRelaxed CommentMessageBody) = InternalMsgBody
+```
+For MessageRelaxed checkout [TON Block TL-B](https://github.com/ton-blockchain/ton/blob/master/crypto/block/block.tlb#L159)
+
+### Hints
+| Value | Length or type | Description |
+| --- | --- | --- |
+| `has_query_id` | 1 | Whether `query_id` is present |
+| `query_id` | 0 or 8 | `query_id` for the message, 0 will be used if `!has_query_id` |
+| `send_mode` | 8 | Message send mode |
+| `destination_address` | Address | Address that will recieve the message from vesting |
+| `amount` | `varuint` | The amount of TON to be forwarded with the message from vesting |
+| `comment_length` | 8 | The length of the comment |
+| `comment` | 0-120 bytes | ASCII comment |
