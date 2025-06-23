@@ -629,8 +629,7 @@ bool process_hints(transaction_t* tx) {
     }
 
     if ((tx->hints_type == TRANSACTION_TONWHALES_POOL_DEPOSIT ||
-        tx->hints_type == TRANSACTION_TONWHALES_POOL_WITHDRAW)) {
-
+         tx->hints_type == TRANSACTION_TONWHALES_POOL_WITHDRAW)) {
         bool is_deposit = tx->hints_type == TRANSACTION_TONWHALES_POOL_DEPOSIT;
 
         BitString_init(&bits);
@@ -638,12 +637,10 @@ bool process_hints(transaction_t* tx) {
         // op code
         BitString_storeUint(&bits, is_deposit ? 0x7bcd1fef : 0xda803efd, 32);
 
-
         // query id
         uint64_t query_id;
         SAFE(buffer_read_u64(&buf, &query_id, BE));
         BitString_storeUint(&bits, query_id, 64);
-
 
         // gas limit
         uint8_t gas_amount_size;
@@ -651,8 +648,12 @@ bool process_hints(transaction_t* tx) {
         SAFE(buffer_read_varuint(&buf, &gas_amount_size, gas_amount_buf, MAX_VALUE_BYTES_LEN));
         BitString_storeCoinsBuf(&bits, gas_amount_buf, gas_amount_size);
 
-        add_hint_amount(&tx->hints, "Gas limit", "TON", gas_amount_buf, gas_amount_size, EXPONENT_SMALLEST_UNIT);
-
+        add_hint_amount(&tx->hints,
+                        "Gas limit",
+                        "TON",
+                        gas_amount_buf,
+                        gas_amount_size,
+                        EXPONENT_SMALLEST_UNIT);
 
         // amount for withdrawal
         if (!is_deposit) {
@@ -664,11 +665,15 @@ bool process_hints(transaction_t* tx) {
             if (amount_size == 0 || (amount_size == 1 && amount_buf[0] == 0)) {
                 BitString_storeUint(&bits, 0, 4);
                 add_hint_text(&tx->hints, "Withdrawal amount", "Everything", 11);
-            }else{
+            } else {
                 BitString_storeCoinsBuf(&bits, amount_buf, amount_size);
-                add_hint_amount(&tx->hints, "Withdrawal amount", "TON", amount_buf, amount_size, EXPONENT_SMALLEST_UNIT);
+                add_hint_amount(&tx->hints,
+                                "Withdrawal amount",
+                                "TON",
+                                amount_buf,
+                                amount_size,
+                                EXPONENT_SMALLEST_UNIT);
             }
-            
         }
 
         // check buffer is empty
@@ -690,7 +695,6 @@ bool process_hints(transaction_t* tx) {
     }
 
     if (tx->hints_type == TRANSACTION_VESTING_SEND_MSG_COMMENT) {
-
         CellRef_t internal_message_cell;
 
         BitString_init(&bits);
@@ -724,14 +728,19 @@ bool process_hints(transaction_t* tx) {
         uint8_t amount_buf[MAX_VALUE_BYTES_LEN];
         SAFE(buffer_read_varuint(&buf, &amount_size, amount_buf, MAX_VALUE_BYTES_LEN));
 
-        add_hint_amount(&tx->hints, "To send from vesting", "TON", amount_buf, amount_size, EXPONENT_SMALLEST_UNIT);
+        add_hint_amount(&tx->hints,
+                        "To send from vesting",
+                        "TON",
+                        amount_buf,
+                        amount_size,
+                        EXPONENT_SMALLEST_UNIT);
 
         // comment length
         uint8_t comment_length;
         SAFE(buffer_read_u8(&buf, &comment_length));
 
         // comment
-        uint8_t comment[120]; // 120 is max comment length
+        uint8_t comment[120];  // 120 is max comment length
         SAFE(buffer_read_buffer(&buf, comment, comment_length));
 
         // Check ASCII
@@ -768,13 +777,13 @@ bool process_hints(transaction_t* tx) {
 
         // cell's 1023 bits - already taken bits is enough for body?
         // body length is comment_length + 32 bits for op code
-        if (1023 - 380 - amount_size*8 < comment_length*8 + 32){
+        if (1023 - 380 - amount_size * 8 < comment_length * 8 + 32) {
             // not enough bits for body
             // need to create message body cell
             has_message_body_cell = true;
 
-            BitString_storeUint(&temp_bits, 0, 32); // op code for comment
-            BitString_storeBuffer(&temp_bits, comment, comment_length); // comment
+            BitString_storeUint(&temp_bits, 0, 32);                      // op code for comment
+            BitString_storeBuffer(&temp_bits, comment, comment_length);  // comment
             // temporary use cell as message body cell
             SAFE(hash_Cell(&temp_bits, NULL, 0, &cell));
         }
@@ -806,13 +815,13 @@ bool process_hints(transaction_t* tx) {
 
         if (has_message_body_cell) {
             // need to create message body cell
-            BitString_storeBit(&temp_bits, 1); // 1 for ref
+            BitString_storeBit(&temp_bits, 1);  // 1 for ref
             SAFE(hash_Cell(&temp_bits, &cell, 1, &internal_message_cell));
-        }else{
+        } else {
             // enough bits for body inside the current cell
-            BitString_storeBit(&temp_bits, 0); // 0 for no ref
-            BitString_storeUint(&temp_bits, 0, 32); // op code for comment
-            BitString_storeBuffer(&temp_bits, comment, comment_length); // comment
+            BitString_storeBit(&temp_bits, 0);                           // 0 for no ref
+            BitString_storeUint(&temp_bits, 0, 32);                      // op code for comment
+            BitString_storeBuffer(&temp_bits, comment, comment_length);  // comment
             SAFE(hash_Cell(&temp_bits, NULL, 0, &internal_message_cell));
         }
 

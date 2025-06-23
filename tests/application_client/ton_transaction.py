@@ -641,7 +641,7 @@ class TonWhalesPoolWithdrawPayload(Payload):
             .store_coins(self.withdrawal_amount)
             .end_cell()
         )
-    
+
 
 class VestingSendMsgCommentPayload(Payload):
     def __init__(self,
@@ -673,20 +673,30 @@ class VestingSendMsgCommentPayload(Payload):
             len(main_body).to_bytes(2, byteorder="big"),
             main_body
         ])
-    
+
     def to_message_body_cell(self) -> Cell:
 
-        builder = begin_cell().store_uint(0xa7733acd, 32).store_uint(self.query_id, 64).store_uint(self.sendMode, 8)
+        builder = (
+            begin_cell()
+            .store_uint(0xa7733acd, 32)
+            .store_uint(self.query_id, 64)
+            .store_uint(self.sendMode, 8)
+        )
 
         body = begin_cell().store_uint(0, 32).store_bytes(self.comment.encode("utf-8")).end_cell()
 
-        msg_header = Contract.create_internal_message_header(dest=self.destination, bounce=True, grams=self.value)
+        msg_header = Contract.create_internal_message_header(
+            dest=self.destination,
+            bounce=True,
+            grams=self.value
+        )
+
         common_msg_info = Contract.create_common_msg_info(header=msg_header, body=body)
 
         builder.store_ref(common_msg_info)
         return builder.end_cell()
-    
-    
+
+
 # pylint: disable-next=too-many-instance-attributes
 class Transaction:
     def __init__(self,

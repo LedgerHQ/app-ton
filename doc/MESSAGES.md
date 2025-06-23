@@ -289,7 +289,7 @@ For MessageRelaxed checkout [TON Block TL-B](https://github.com/ton-blockchain/t
 | `has_query_id` | 1 | Whether `query_id` is present |
 | `query_id` | 0 or 8 | `query_id` for the message, 0 will be used if `!has_query_id` |
 | `send_mode` | 8 | Message send mode |
-| `destination_address` | Address | Address that will recieve the message from vesting |
+| `destination_address` | Address | Address that will receive the message from vesting |
 | `amount` | `varuint` | The amount of TON to be forwarded with the message from vesting |
 | `comment_length` | 8 | The length of the comment |
 | `comment` | 0-120 bytes | ASCII comment |
