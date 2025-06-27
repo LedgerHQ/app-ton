@@ -741,6 +741,10 @@ bool process_hints(transaction_t* tx) {
 
         // comment
         uint8_t comment[120];  // 120 is max comment length
+        // check comment length is not greater than 120
+        if (comment_length > sizeof(comment)) {
+            return false;
+        }
         SAFE(buffer_read_buffer(&buf, comment, comment_length));
 
         // Check ASCII
