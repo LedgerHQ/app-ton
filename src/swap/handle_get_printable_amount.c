@@ -14,7 +14,7 @@ void swap_handle_get_printable_amount(get_printable_amount_parameters_t* params)
            params->coin_configuration);
     PRINTF("amount %.*H\n", params->amount_length, params->amount);
     uint8_t decimals;
-    char ticker[MAX_SWAP_TOKEN_LENGTH] = {0};
+    char ticker[MAX_TICKER_LEN] = {0};
 
     PRINTF("Inside Ton swap_handle_get_printable_amount\n");
 

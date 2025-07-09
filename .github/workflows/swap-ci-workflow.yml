@@ -13,6 +13,5 @@ jobs:
   job_functional_tests:
     uses: LedgerHQ/app-exchange/.github/workflows/reusable_swap_functional_tests.yml@develop
     with:
-      repo_for_ton: ${{ github.repository }}
       branch_for_ton: ${{ github.ref }}
-      test_filter: '"Ton or ton"'
+      test_filter: '"TON or Ton or ton"'
