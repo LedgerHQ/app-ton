@@ -30,7 +30,14 @@ endif()
 
 # compatible with ClusterFuzzLite
 if (NOT DEFINED ENV{LIB_FUZZING_ENGINE})
-	set(COMPILATION_FLAGS_ "-g -Wall -fsanitize=fuzzer,address,undefined")
+
+  # set one specific SANITIZER for workflow
+	if(DEFINED ENV{SANITIZER} AND (ENV{SANITIZER} STREQUAL "address" OR ENV{SANITIZER} STREQUAL "memory" OR ENV{SANITIZER} STREQUAL "undefined"))
+    set(COMPILATION_FLAGS_ "-g -Wall -fsanitize=fuzzer,$ENV{SANITIZER}")
+  else()
+    set(COMPILATION_FLAGS_ "-g -Wall")
+  endif()
+
 else()
 	set(COMPILATION_FLAGS_ "$ENV{LIB_FUZZING_ENGINE} $ENV{CXXFLAGS}")
 endif()
