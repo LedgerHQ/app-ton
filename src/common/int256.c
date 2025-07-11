@@ -21,7 +21,8 @@ bool uint256_to_decimal(const uint8_t *value, size_t value_len, char *out, size_
             // Not enough space to hold "0" and \0.
             return false;
         }
-        strlcpy(out, "0", out_len);
+        out[0] = '0';
+        out[1] = '\0';
         return true;
     }
 

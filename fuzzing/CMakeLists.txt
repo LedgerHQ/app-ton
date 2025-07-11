@@ -15,22 +15,46 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
+if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(FATAL_ERROR "Fuzzer needs to be built with Clang")
+endif()
+
+if (NOT DEFINED BOLOS_SDK)
+  message(FATAL_ERROR "BOLOS_SDK environment variable not found.")
+endif()
+
 # guard against in-source builds
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
 endif()
 
+# compatible with ClusterFuzzLite
+if (NOT DEFINED ENV{LIB_FUZZING_ENGINE})
+
+  # set one specific SANITIZER for workflow
+	if(DEFINED ENV{SANITIZER} AND (ENV{SANITIZER} STREQUAL "address" OR ENV{SANITIZER} STREQUAL "memory" OR ENV{SANITIZER} STREQUAL "undefined"))
+    set(COMPILATION_FLAGS_ "-g -Wall -fsanitize=fuzzer,$ENV{SANITIZER}")
+  else()
+    set(COMPILATION_FLAGS_ "-g -Wall")
+  endif()
+
+else()
+	set(COMPILATION_FLAGS_ "$ENV{LIB_FUZZING_ENGINE} $ENV{CXXFLAGS}")
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_compile_definitions(
+  HAVE_HASH
+  HAVE_SHA256
+)
+
+string(REPLACE " " ";" COMPILATION_FLAGS ${COMPILATION_FLAGS_})
 
 include(extra/TxParser.cmake)
 
 add_executable(fuzz_tx_parser fuzz_tx_parser.cc)
 
-target_compile_options(fuzz_tx_parser
-    PRIVATE $<$<C_COMPILER_ID:Clang>:-g -O2 -fsanitize=fuzzer,address,undefined>
-)
-
-target_link_libraries(fuzz_tx_parser
-    PRIVATE $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer,address,undefined>
-    PUBLIC txparser
-)
+target_compile_options(fuzz_tx_parser PUBLIC ${COMPILATION_FLAGS})
+target_link_options(fuzz_tx_parser PUBLIC ${COMPILATION_FLAGS})
+target_link_libraries(fuzz_tx_parser PUBLIC txparser)

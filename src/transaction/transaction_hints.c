@@ -13,7 +13,9 @@
 #include "../common/hints.h"
 #include "../common/bits.h"
 #include "../common/cell.h"
+#ifndef FUZZ
 #include "../globals.h"
+#endif
 #include "../crypto.h"
 #include "../address.h"
 #include "../jetton.h"
@@ -187,8 +189,11 @@ bool process_hints(transaction_t* tx) {
         address_t response;
         SAFE(buffer_read_address(&buf, &response));
         BitString_storeAddress(&bits, response.chain, response.hash);
-
+#ifdef FUZZ
+        if (tx->seqno & 1) {
+#else
         if (N_storage.expert_mode) {
+#endif
             add_hint_address(&tx->hints, "Send excess to", response, false);
         }
 
@@ -197,7 +202,11 @@ bool process_hints(transaction_t* tx) {
         if (tmp) {
             SAFE(buffer_read_cell_ref(&buf, &refs[ref_count]));
 
+#ifdef FUZZ
+            if (tx->seqno & 1) {
+#else
             if (N_storage.expert_mode) {
+#endif
                 add_hint_hash(&tx->hints, "Custom payload", refs[ref_count].hash);
             }
 
@@ -212,7 +221,11 @@ bool process_hints(transaction_t* tx) {
         SAFE(buffer_read_varuint(&buf, &fwd_amount_size, fwd_amount_buf, MAX_VALUE_BYTES_LEN));
         BitString_storeCoinsBuf(&bits, fwd_amount_buf, fwd_amount_size);
 
+#ifdef FUZZ
+        if (tx->seqno & 1) {
+#else
         if (N_storage.expert_mode) {
+#endif
             add_hint_amount(&tx->hints,
                             "Forward amount",
                             "TON",
@@ -226,7 +239,11 @@ bool process_hints(transaction_t* tx) {
         if (tmp) {
             SAFE(buffer_read_cell_ref(&buf, &refs[ref_count]));
 
+#ifdef FUZZ
+            if (tx->seqno & 1) {
+#else
             if (N_storage.expert_mode) {
+#endif
                 add_hint_hash(&tx->hints, "Forward payload", refs[ref_count].hash);
             }
 
@@ -283,7 +300,11 @@ bool process_hints(transaction_t* tx) {
         SAFE(buffer_read_address(&buf, &response));
         BitString_storeAddress(&bits, response.chain, response.hash);
 
+#ifdef FUZZ
+        if (tx->seqno & 1) {
+#else
         if (N_storage.expert_mode) {
+#endif
             add_hint_address(&tx->hints, "Send excess to", response, false);
         }
 
@@ -295,7 +316,11 @@ bool process_hints(transaction_t* tx) {
         } else if (type == 0x01) {
             SAFE(buffer_read_cell_ref(&buf, &refs[ref_count]));
 
+#ifdef FUZZ
+            if (tx->seqno & 1) {
+#else
             if (N_storage.expert_mode) {
+#endif
                 add_hint_hash(&tx->hints, "Custom payload", refs[ref_count].hash);
             }
 
@@ -799,7 +824,7 @@ bool process_hints(transaction_t* tx) {
         BitString_storeUint(&temp_bits, 0, 1);
 
         // 1 bit for ihr disabled, 1 for allow bounces
-        BitString_storeUint(&temp_bits, 0b11, 2);
+        BitString_storeUint(&temp_bits, 3 /* 0b11 */, 2);
 
         // 1 bit for isBounced, 2 bits for src address
         BitString_storeUint(&temp_bits, 0, 3);

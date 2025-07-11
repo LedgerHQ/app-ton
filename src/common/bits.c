@@ -22,7 +22,7 @@ void BitString_storeBit(BitString_t* self, int8_t v) {
 }
 
 void BitString_storeUint(BitString_t* self, uint64_t v, uint8_t bits) {
-    // Explicitely store a 0 bit for all bits that cannot be represented in v
+    // Explicitly store a 0 bit for all bits that cannot be represented in v
     while (bits >= 8 * sizeof(v) - 1) {
         BitString_storeBit(self, 0);
         bits--;
