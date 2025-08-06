@@ -24,13 +24,24 @@ def test_get_proof_accepted(firmware, backend, navigator, test_name):
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
-            instructions = [
-                NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavIns(NavInsID.TOUCH, (200, 250)),
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
-                NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
-            ]
+            instructions = []
+            if firmware.device == "flex":
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                    NavIns(NavInsID.TOUCH, (80, 440)),
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
+                ]
+            elif firmware.device == "stax":
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                    NavIns(NavInsID.TOUCH, (60, 520)),
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
+                ]
+            else:
+                raise ValueError(f"Unsupported device: {firmware.device}")
+            
             navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                            test_name,
                                            instructions)
@@ -55,13 +66,24 @@ def test_get_proof_accepted_v3r2(firmware, backend, navigator, test_name):
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
-            instructions = [
-                NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavIns(NavInsID.TOUCH, (200, 250)),
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
-                NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
-            ]
+            instructions = []
+            if firmware.device == "flex":
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                    NavIns(NavInsID.TOUCH, (80, 440)),
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
+                ]
+            elif firmware.device == "stax":
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                    NavIns(NavInsID.TOUCH, (60, 520)),
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
+                ]
+            else:
+                raise ValueError(f"Unsupported device: {firmware.device}")
+            
             navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                            test_name,
                                            instructions)
@@ -97,12 +119,24 @@ def test_get_proof_refused(firmware, backend, navigator, test_name):
                 NavInsID.SWIPE_CENTER_TO_LEFT,
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
             ],
-            [
-                NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
-            ]
         ]
+        if firmware.device == "flex":
+            instructions_set.append([
+                NavInsID.SWIPE_CENTER_TO_LEFT,
+                NavIns(NavInsID.TOUCH, (80, 440)),
+                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
+            ])
+        elif firmware.device == "stax":
+            instructions_set.append([
+                NavInsID.SWIPE_CENTER_TO_LEFT,
+                NavIns(NavInsID.TOUCH, (60, 520)),
+                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
+            ])
+        else:
+            raise ValueError(f"Unsupported device: {firmware.device}")
+        
         for i, instructions in enumerate(instructions_set):
             with pytest.raises(ExceptionRAPDU) as e:
                 with client.get_address_proof(path, AddressDisplayFlags.NONE, domain, timestamp, payload):

@@ -13,7 +13,9 @@
 #include "../common/hints.h"
 #include "../common/bits.h"
 #include "../common/cell.h"
+#ifndef FUZZ
 #include "../globals.h"
+#endif
 #include "../crypto.h"
 #include "../address.h"
 #include "../jetton.h"
@@ -187,8 +189,11 @@ bool process_hints(transaction_t* tx) {
         address_t response;
         SAFE(buffer_read_address(&buf, &response));
         BitString_storeAddress(&bits, response.chain, response.hash);
-
+#ifdef FUZZ
+        if (tx->seqno & 1) {
+#else
         if (N_storage.expert_mode) {
+#endif
             add_hint_address(&tx->hints, "Send excess to", response, false);
         }
 
@@ -197,7 +202,11 @@ bool process_hints(transaction_t* tx) {
         if (tmp) {
             SAFE(buffer_read_cell_ref(&buf, &refs[ref_count]));
 
+#ifdef FUZZ
+            if (tx->seqno & 1) {
+#else
             if (N_storage.expert_mode) {
+#endif
                 add_hint_hash(&tx->hints, "Custom payload", refs[ref_count].hash);
             }
 
@@ -212,7 +221,11 @@ bool process_hints(transaction_t* tx) {
         SAFE(buffer_read_varuint(&buf, &fwd_amount_size, fwd_amount_buf, MAX_VALUE_BYTES_LEN));
         BitString_storeCoinsBuf(&bits, fwd_amount_buf, fwd_amount_size);
 
+#ifdef FUZZ
+        if (tx->seqno & 1) {
+#else
         if (N_storage.expert_mode) {
+#endif
             add_hint_amount(&tx->hints,
                             "Forward amount",
                             "TON",
@@ -226,7 +239,11 @@ bool process_hints(transaction_t* tx) {
         if (tmp) {
             SAFE(buffer_read_cell_ref(&buf, &refs[ref_count]));
 
+#ifdef FUZZ
+            if (tx->seqno & 1) {
+#else
             if (N_storage.expert_mode) {
+#endif
                 add_hint_hash(&tx->hints, "Forward payload", refs[ref_count].hash);
             }
 
@@ -283,7 +300,11 @@ bool process_hints(transaction_t* tx) {
         SAFE(buffer_read_address(&buf, &response));
         BitString_storeAddress(&bits, response.chain, response.hash);
 
+#ifdef FUZZ
+        if (tx->seqno & 1) {
+#else
         if (N_storage.expert_mode) {
+#endif
             add_hint_address(&tx->hints, "Send excess to", response, false);
         }
 
@@ -295,7 +316,11 @@ bool process_hints(transaction_t* tx) {
         } else if (type == 0x01) {
             SAFE(buffer_read_cell_ref(&buf, &refs[ref_count]));
 
+#ifdef FUZZ
+            if (tx->seqno & 1) {
+#else
             if (N_storage.expert_mode) {
+#endif
                 add_hint_hash(&tx->hints, "Custom payload", refs[ref_count].hash);
             }
 
@@ -626,6 +651,221 @@ bool process_hints(transaction_t* tx) {
         snprintf(tx->title, sizeof(tx->title), "Bridge tokens");
         snprintf(tx->action, sizeof(tx->action), "bridge tokens");
         snprintf(tx->recipient, sizeof(tx->recipient), "Bridge");
+    }
+
+    if ((tx->hints_type == TRANSACTION_TONWHALES_POOL_DEPOSIT ||
+         tx->hints_type == TRANSACTION_TONWHALES_POOL_WITHDRAW)) {
+        bool is_deposit = tx->hints_type == TRANSACTION_TONWHALES_POOL_DEPOSIT;
+
+        BitString_init(&bits);
+
+        // op code
+        BitString_storeUint(&bits, is_deposit ? 0x7bcd1fef : 0xda803efd, 32);
+
+        // query id
+        uint64_t query_id;
+        SAFE(buffer_read_u64(&buf, &query_id, BE));
+        BitString_storeUint(&bits, query_id, 64);
+
+        // gas limit
+        uint8_t gas_amount_size;
+        uint8_t gas_amount_buf[MAX_VALUE_BYTES_LEN];
+        SAFE(buffer_read_varuint(&buf, &gas_amount_size, gas_amount_buf, MAX_VALUE_BYTES_LEN));
+        BitString_storeCoinsBuf(&bits, gas_amount_buf, gas_amount_size);
+
+        add_hint_amount(&tx->hints,
+                        "Gas limit",
+                        "TON",
+                        gas_amount_buf,
+                        gas_amount_size,
+                        EXPONENT_SMALLEST_UNIT);
+
+        // amount for withdrawal
+        if (!is_deposit) {
+            uint8_t amount_size;
+            uint8_t amount_buf[MAX_VALUE_BYTES_LEN];
+            SAFE(buffer_read_varuint(&buf, &amount_size, amount_buf, MAX_VALUE_BYTES_LEN));
+
+            // if amount is 0
+            if (amount_size == 0 || (amount_size == 1 && amount_buf[0] == 0)) {
+                BitString_storeUint(&bits, 0, 4);
+                add_hint_text(&tx->hints, "Withdrawal amount", "Everything", 11);
+            } else {
+                BitString_storeCoinsBuf(&bits, amount_buf, amount_size);
+                add_hint_amount(&tx->hints,
+                                "Withdrawal amount",
+                                "TON",
+                                amount_buf,
+                                amount_size,
+                                EXPONENT_SMALLEST_UNIT);
+            }
+        }
+
+        // check buffer is empty
+        CHECK_END();
+
+        // Build cell
+        SAFE(hash_Cell(&bits, NULL, 0, &cell));
+        hasCell = true;
+
+        // Operation
+        if (is_deposit) {
+            snprintf(tx->title, sizeof(tx->title), "Deposit");
+            snprintf(tx->action, sizeof(tx->action), "deposit TON");
+        } else {
+            snprintf(tx->title, sizeof(tx->title), "Withdrawal");
+            snprintf(tx->action, sizeof(tx->action), "withdraw TON");
+        }
+        snprintf(tx->recipient, sizeof(tx->recipient), "Pool");
+    }
+
+    if (tx->hints_type == TRANSACTION_VESTING_SEND_MSG_COMMENT) {
+        CellRef_t internal_message_cell;
+
+        BitString_init(&bits);
+
+        // op code
+        BitString_storeUint(&bits, 0xa7733acd, 32);
+
+        // has query id?
+        SAFE(buffer_read_bool(&buf, &tmp));
+        if (tmp) {
+            uint64_t query_id;
+            SAFE(buffer_read_u64(&buf, &query_id, BE));
+            BitString_storeUint(&bits, query_id, 64);
+        } else {
+            BitString_storeUint(&bits, 0, 64);
+        }
+
+        // send mode
+        uint8_t send_mode;
+        SAFE(buffer_read_u8(&buf, &send_mode));
+        BitString_storeUint(&bits, send_mode, 8);
+
+        // dest address
+        address_t dest_address;
+        SAFE(buffer_read_address(&buf, &dest_address));
+
+        add_hint_address(&tx->hints, "Destination", dest_address, true);
+
+        // msg value
+        uint8_t amount_size;
+        uint8_t amount_buf[MAX_VALUE_BYTES_LEN];
+        SAFE(buffer_read_varuint(&buf, &amount_size, amount_buf, MAX_VALUE_BYTES_LEN));
+
+        add_hint_amount(&tx->hints,
+                        "To send from vesting",
+                        "TON",
+                        amount_buf,
+                        amount_size,
+                        EXPONENT_SMALLEST_UNIT);
+
+        // comment length
+        uint8_t comment_length;
+        SAFE(buffer_read_u8(&buf, &comment_length));
+
+        // comment
+        uint8_t comment[120];  // 120 is max comment length
+        // check comment length is not greater than 120
+        if (comment_length > sizeof(comment)) {
+            return false;
+        }
+        SAFE(buffer_read_buffer(&buf, comment, comment_length));
+
+        // Check ASCII
+        if (!check_ascii(comment, comment_length)) {
+            return false;
+        }
+
+        // check buf is empty
+        CHECK_END();
+
+        bool has_message_body_cell = false;
+
+        BitString_t temp_bits;
+        BitString_init(&temp_bits);
+
+        /*
+         1 bit for relaxed message tag
+         1 bit for ihr disabled
+         1 bit for allow bounces
+         1 bit for is bounced
+         2 bits for src address
+         3 + 8 + 32*8 for dest address
+         4 + amount_size*8 for amount
+         1 for other currencies
+         4 for ihr fee
+         4 for fwd fee
+         64 for created lt
+         32 for created time
+         1 for has init state
+         1 bit for ref
+
+         TOTAL: 380 + amount_size*8
+        */
+
+        // cell's 1023 bits - already taken bits is enough for body?
+        // body length is comment_length + 32 bits for op code
+        if (1023 - 380 - amount_size * 8 < comment_length * 8 + 32) {
+            // not enough bits for body
+            // need to create message body cell
+            has_message_body_cell = true;
+
+            BitString_storeUint(&temp_bits, 0, 32);                      // op code for comment
+            BitString_storeBuffer(&temp_bits, comment, comment_length);  // comment
+            // temporary use cell as message body cell
+            SAFE(hash_Cell(&temp_bits, NULL, 0, &cell));
+        }
+
+        // reset temp_bits
+        BitString_init(&temp_bits);
+
+        // relaxed message tag
+        BitString_storeUint(&temp_bits, 0, 1);
+
+        // 1 bit for ihr disabled, 1 for allow bounces
+        BitString_storeUint(&temp_bits, 3 /* 0b11 */, 2);
+
+        // 1 bit for isBounced, 2 bits for src address
+        BitString_storeUint(&temp_bits, 0, 3);
+
+        // dest address
+        BitString_storeAddress(&temp_bits, dest_address.chain, dest_address.hash);
+        // amount
+        BitString_storeCoinsBuf(&temp_bits, amount_buf, amount_size);
+
+        // 1 bit for other currencies
+        // 4 bits for ihr fee
+        // 4 bits for fwd fee
+        // 64 bits for created lt
+        // 32 bits for created time
+        // 1 bit for has init state
+        BitString_storeUint(&temp_bits, 0, 106);
+
+        if (has_message_body_cell) {
+            // need to create message body cell
+            BitString_storeBit(&temp_bits, 1);  // 1 for ref
+            SAFE(hash_Cell(&temp_bits, &cell, 1, &internal_message_cell));
+        } else {
+            // enough bits for body inside the current cell
+            BitString_storeBit(&temp_bits, 0);                           // 0 for no ref
+            BitString_storeUint(&temp_bits, 0, 32);                      // op code for comment
+            BitString_storeBuffer(&temp_bits, comment, comment_length);  // comment
+            SAFE(hash_Cell(&temp_bits, NULL, 0, &internal_message_cell));
+        }
+
+        // hash main cell
+        SAFE(hash_Cell(&bits, &internal_message_cell, 1, &cell));
+        hasCell = true;
+
+        // save pointer to the comment (comment_length bytes from the end of tx->hints_data)
+        const char* comment_ptr = (const char*) (tx->hints_data + (tx->hints_len - comment_length));
+        add_hint_text(&tx->hints, "Comment", comment_ptr, comment_length);
+
+        // Operation
+        snprintf(tx->title, sizeof(tx->title), "Vesting");
+        snprintf(tx->action, sizeof(tx->action), "%.*s", comment_length, comment);
+        snprintf(tx->recipient, sizeof(tx->recipient), "Vesting contract");
     }
 
     // Check hash
