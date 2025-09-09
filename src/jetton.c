@@ -46,6 +46,7 @@ typedef struct {
     uint8_t master_workchain;
     uint8_t decimals;
     uint8_t state_assembler_idx;
+    uint8_t fixed_prefix_length;
 } jetton_t;
 
 static const jetton_t jettons[] = {
@@ -64,6 +65,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 6,
         .state_assembler_idx = 0,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0x2f, 0x95, 0x61, 0x43, 0xc4, 0x61, 0x76, 0x95, 0x79, 0xba, 0xef,
@@ -80,6 +82,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 0,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0xbd, 0xf3, 0xfa, 0x80, 0x98, 0xd1, 0x29, 0xb5, 0x4b, 0x4f, 0x73,
@@ -96,6 +99,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 1,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0x74, 0x4a, 0x8c, 0x6e, 0x18, 0x3c, 0x79, 0xaa, 0x35, 0x6d, 0xd0,
@@ -112,6 +116,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 2,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0xcf, 0x76, 0xaf, 0x31, 0x8c, 0x8,  0x72, 0xb5, 0x8a, 0x9f, 0x19,
@@ -128,6 +133,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 3,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0xcd, 0x87, 0x2f, 0xa7, 0xc5, 0x81, 0x60, 0x52, 0xac, 0xdf, 0x53,
@@ -144,6 +150,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 4,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0xaa, 0xb,  0xa1, 0x21, 0x44, 0x9f, 0xed, 0xa5, 0x69, 0xe0, 0x2b,
@@ -160,6 +167,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 1,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0xfe, 0x72, 0xf4, 0x74, 0x37, 0x3e, 0x97, 0x3,  0x24, 0x41, 0xbd,
@@ -176,6 +184,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 4,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0xaf, 0xc4, 0x9c, 0xb8, 0x78, 0x6f, 0x21, 0xc8, 0x70, 0x45, 0xb1,
@@ -192,6 +201,7 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 0,
+        .fixed_prefix_length = 0,
     },
     {
         .master_hash = {0x78, 0xcd, 0x9b, 0xac, 0x1e, 0xc6, 0xd4, 0xda, 0xf5, 0x53, 0x3e,
@@ -208,6 +218,24 @@ static const jetton_t jettons[] = {
         .master_workchain = 0,
         .decimals = 9,
         .state_assembler_idx = 0,
+        .fixed_prefix_length = 0,
+    },
+    {
+        .master_hash = {0x66, 0x8f, 0x1a, 0x58, 0xb0, 0x9f, 0x32, 0x1c, 0x4a, 0xda, 0x61,
+                        0xf4, 0xe9, 0x2d, 0xd7, 0xa3, 0x9, 0xe9, 0x7, 0x32, 0x82, 0x92,
+                        0xd9, 0xf3, 0x84, 0xac, 0xfe, 0x25, 0x2c, 0x70, 0x9f, 0xe1},
+        .name = "tgBTC",
+        .code =
+            {
+                .hash = {0x63, 0xc, 0x88, 0x9f, 0xec, 0xfa, 0x7d, 0xc0, 0xd2, 0xcb, 0xd7,
+                         0xa, 0xaa, 0xcd, 0x32, 0x51, 0x52, 0xae, 0xe3, 0xcc, 0x3a, 0x12,
+                         0xc5, 0x32, 0xcc, 0xea, 0x29, 0x29, 0xeb, 0xc1, 0x67, 0xa9},
+                .max_depth = 0,
+            },
+        .master_workchain = 0,
+        .decimals = 8,
+        .state_assembler_idx = 5,
+        .fixed_prefix_length = 8,
     },
 };
 
@@ -215,20 +243,15 @@ static void assemble_usdt_state(CellRef_t *out,
                                 const CellRef_t *code,
                                 const address_t *owner,
                                 const address_t *master) {
+    (void) code;
     BitString_t bits;
-    CellRef_t refs[2];
-    refs[0] = *code;
 
     BitString_init(&bits);
     BitString_storeUint(&bits, 0, 4);
     BitString_storeCoins(&bits, 0);
     BitString_storeAddress(&bits, owner->chain, owner->hash);
     BitString_storeAddress(&bits, master->chain, master->hash);
-    hash_Cell(&bits, NULL, 0, &refs[1]);
-
-    BitString_init(&bits);
-    BitString_storeUint(&bits, 0b00110, 5);
-    hash_Cell(&bits, refs, 2, out);
+    hash_Cell(&bits, NULL, 0, out);
 }
 
 static void assemble_tston_state(CellRef_t *out,
@@ -236,8 +259,6 @@ static void assemble_tston_state(CellRef_t *out,
                                  const address_t *owner,
                                  const address_t *master) {
     BitString_t bits;
-    CellRef_t refs[2];
-    refs[0] = *code;
 
     BitString_init(&bits);
     BitString_storeCoins(&bits, 0);
@@ -245,11 +266,7 @@ static void assemble_tston_state(CellRef_t *out,
     BitString_storeAddress(&bits, master->chain, master->hash);
     BitString_storeCoins(&bits, 0);
     BitString_storeUint(&bits, 0, 48);
-    hash_Cell(&bits, refs, 1, &refs[1]);
-
-    BitString_init(&bits);
-    BitString_storeUint(&bits, 0b00110, 5);
-    hash_Cell(&bits, refs, 2, out);
+    hash_Cell(&bits, code, 1, out);
 }
 
 static void assemble_wston_state(CellRef_t *out,
@@ -257,28 +274,21 @@ static void assemble_wston_state(CellRef_t *out,
                                  const address_t *owner,
                                  const address_t *master) {
     BitString_t bits;
-    CellRef_t refs[2];
-    refs[0] = *code;
 
     BitString_init(&bits);
     BitString_storeCoins(&bits, 0);
     BitString_storeAddress(&bits, owner->chain, owner->hash);
     BitString_storeAddress(&bits, master->chain, master->hash);
     BitString_storeBit(&bits, 0);
-    hash_Cell(&bits, refs, 1, &refs[1]);
-
-    BitString_init(&bits);
-    BitString_storeUint(&bits, 0b00110, 5);
-    hash_Cell(&bits, refs, 2, out);
+    hash_Cell(&bits, code, 1, out);
 }
 
 static void assemble_hton_state(CellRef_t *out,
                                 const CellRef_t *code,
                                 const address_t *owner,
                                 const address_t *master) {
+    (void) code;
     BitString_t bits;
-    CellRef_t refs[2];
-    refs[0] = *code;
 
     BitString_init(&bits);
     BitString_storeAddress(&bits, owner->chain, owner->hash);
@@ -286,11 +296,7 @@ static void assemble_hton_state(CellRef_t *out,
     BitString_storeCoins(&bits, 0);
     BitString_storeBit(&bits, 0);
     BitString_storeCoins(&bits, 0);
-    hash_Cell(&bits, NULL, 0, &refs[1]);
-
-    BitString_init(&bits);
-    BitString_storeUint(&bits, 0b00110, 5);
-    hash_Cell(&bits, refs, 2, out);
+    hash_Cell(&bits, NULL, 0, out);
 }
 
 static void assemble_stton_state(CellRef_t *out,
@@ -298,18 +304,26 @@ static void assemble_stton_state(CellRef_t *out,
                                  const address_t *owner,
                                  const address_t *master) {
     BitString_t bits;
-    CellRef_t refs[2];
-    refs[0] = *code;
 
     BitString_init(&bits);
     BitString_storeCoins(&bits, 0);
     BitString_storeAddress(&bits, owner->chain, owner->hash);
     BitString_storeAddress(&bits, master->chain, master->hash);
-    hash_Cell(&bits, refs, 1, &refs[1]);
+    hash_Cell(&bits, code, 1, out);
+}
+
+static void assemble_tgbtc_state(CellRef_t *out,
+                                 const CellRef_t *code,
+                                 const address_t *owner,
+                                 const address_t *master) {
+    (void) code;
+    BitString_t bits;
 
     BitString_init(&bits);
-    BitString_storeUint(&bits, 0b00110, 5);
-    hash_Cell(&bits, refs, 2, out);
+    BitString_storeCoins(&bits, 0);
+    BitString_storeAddress(&bits, owner->chain, owner->hash);
+    BitString_storeAddress(&bits, master->chain, master->hash);
+    hash_Cell(&bits, NULL, 0, out);
 }
 
 static bool jetton_state_assembler_dispatcher(CellRef_t *out,
@@ -333,6 +347,9 @@ static bool jetton_state_assembler_dispatcher(CellRef_t *out,
         case 4:
             assemble_stton_state(out, code, owner, master);
             return true;
+        case 5:
+            assemble_tgbtc_state(out, code, owner, master);
+            return true;
     }
     return false;
 }
@@ -349,7 +366,6 @@ static bool jetton_get_id_by_name(const char *name, uint8_t *id) {
 }
 
 bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address_t *jetton_wallet) {
-    CellRef_t state_init = {0};
     address_t master;
 
     if (jetton_id > ARRAYLEN(jettons)) {
@@ -374,11 +390,45 @@ bool jetton_get_wallet_address(size_t jetton_id, const address_t *owner, address
     memcpy(master.hash, jettons[jetton_id].master_hash, HASH_LEN);
     master.chain = jettons[jetton_id].master_workchain;
 
-    SAFE(jetton_state_assembler_dispatcher(&state_init,
+    CellRef_t refs[2];
+
+    refs[0] = jettons[jetton_id].code;
+
+    SAFE(jetton_state_assembler_dispatcher(&refs[1],
                                            &jettons[jetton_id].code,
                                            owner,
                                            &master,
                                            jettons[jetton_id].state_assembler_idx));
+
+    CellRef_t state_init;
+    BitString_t bits;
+
+    if (jettons[jetton_id].fixed_prefix_length == 0) {
+        BitString_init(&bits);
+        BitString_storeUint(&bits, 0b00110, 5);
+        hash_Cell(&bits, refs, 2, &state_init);
+    } else {
+        BitString_init(&bits);
+        BitString_storeUint(&bits, 1, 1);
+        BitString_storeUint(&bits, jettons[jetton_id].fixed_prefix_length, 5);
+        BitString_storeUint(&bits, 0b0110, 4);
+        hash_Cell(&bits, refs, 2, &state_init);
+
+        int whole_bytes = jettons[jetton_id].fixed_prefix_length / 8;
+        for (int i = 0; i < whole_bytes; i++) {
+            state_init.hash[i] = owner->hash[i];
+        }
+
+        int remaining_bits = jettons[jetton_id].fixed_prefix_length % 8;
+        if (remaining_bits > 0) {
+            uint32_t inv_mask_full = (1 << (8 - remaining_bits)) - 1;
+            uint8_t inv_mask = inv_mask_full;
+            uint8_t mask = ~inv_mask;
+
+            state_init.hash[whole_bytes] &= inv_mask;
+            state_init.hash[whole_bytes] |= owner->hash[whole_bytes] & mask;
+        }
+    }
 
     jetton_wallet->chain = master.chain;
     memcpy(jetton_wallet->hash, state_init.hash, HASH_LEN);
