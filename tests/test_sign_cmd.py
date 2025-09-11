@@ -1,6 +1,6 @@
 import pytest
 
-from application_client.ton_transaction import Transaction, SendMode, CommentPayload, Payload, JettonTransferPayload, NFTTransferPayload, CustomUnsafePayload, JettonBurnPayload, AddWhitelistPayload, SingleNominatorWithdrawPayload, ChangeValidatorPayload, TonstakersDepositPayload, JettonDAOVotePayload, ChangeDNSWalletPayload, ChangeDNSPayload, TokenBridgePaySwapPayload
+from application_client.ton_transaction import Transaction, SendMode, CommentPayload, Payload, JettonTransferPayload, NFTTransferPayload, CustomUnsafePayload, JettonBurnPayload, AddWhitelistPayload, SingleNominatorWithdrawPayload, ChangeValidatorPayload, TonstakersDepositPayload, JettonDAOVotePayload, ChangeDNSWalletPayload, ChangeDNSPayload, TokenBridgePaySwapPayload, TonWhalesPoolDepositPayload, TonWhalesPoolWithdrawPayload, VestingSendMsgCommentPayload
 from application_client.ton_command_sender import BoilerplateCommandSender, Errors
 from application_client.ton_response_unpacker import unpack_sign_tx_response
 from ragger.error import ExceptionRAPDU
@@ -125,6 +125,11 @@ def test_sign_tx_with_payload(firmware, backend, navigator, test_name):
         ChangeDNSPayload(bytes([0] * 32), None),
         TokenBridgePaySwapPayload(bytes([0] * 32)),
         JettonBurnPayload(100, Address("0:" + "0" * 64), custom_payload=bytes([1, 32] * 10)),
+        TonWhalesPoolDepositPayload(gas_limit=100_000_000, query_id=123),
+        TonWhalesPoolWithdrawPayload(withdrawal_amount=1_000_000_000, gas_limit=100_000_000, query_id=123),
+        TonWhalesPoolWithdrawPayload(gas_limit=100_000_000, query_id=123),
+        VestingSendMsgCommentPayload("Deposit", SendMode.IGNORE_ERRORS, Address("0:" + "0" * 64), 10_000_000_000),
+        VestingSendMsgCommentPayload("A very very long comment that should be so long that it should be stored in a separate cell", SendMode.IGNORE_ERRORS, Address("0:" + "0" * 64), 10_000_000_000)
     ]
 
     # Enable blind signing and expert mode

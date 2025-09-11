@@ -3,6 +3,7 @@
 
 #include "cx.h"
 
+#include "lcx_sha256.h"
 #include "cell.h"
 
 #include "bits.h"

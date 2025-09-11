@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 from tonsdk.utils import Address
 from tonsdk.boc import Cell
+from tonsdk.contract import Contract
 
 from .ton_utils import write_varuint, write_address, write_cell
 from .my_builder import begin_cell
@@ -66,6 +67,9 @@ class PayloadID(IntEnum):
     JETTON_DAO_VOTE = 8
     CHANGE_DNS_RECORD = 9
     TOKEN_BRIDGE_PAY_SWAP = 10
+    TONWHALES_POOL_DEPOSIT = 11
+    TONWHALES_POOL_WITHDRAW = 12
+    VESTING_SEND_MSG_COMMENT = 13
 
 
 class CommentPayload(Payload):
@@ -581,6 +585,116 @@ class TokenBridgePaySwapPayload(Payload):
             .store_bytes(self.swap_id)
             .end_cell()
         )
+
+
+class TonWhalesPoolDepositPayload(Payload):
+    def __init__(self, gas_limit: int, query_id: int) -> None:
+        self.query_id: int = query_id
+        self.gas_limit: int = gas_limit
+
+    def to_request_bytes(self) -> bytes:
+        main_body = b"".join([
+            self.query_id.to_bytes(8, byteorder="big"),
+            write_varuint(self.gas_limit)
+        ])
+
+        return b"".join([
+            (PayloadID.TONWHALES_POOL_DEPOSIT).to_bytes(4, byteorder="big"),
+            len(main_body).to_bytes(2, byteorder="big"),
+            main_body
+        ])
+
+    def to_message_body_cell(self) -> Cell:
+        return (
+            begin_cell()
+            .store_uint(0x7bcd1fef, 32)
+            .store_uint(self.query_id, 64)
+            .store_coins(self.gas_limit)
+            .end_cell()
+        )
+
+
+class TonWhalesPoolWithdrawPayload(Payload):
+    def __init__(self, gas_limit: int, query_id: int, withdrawal_amount: Optional[int] = 0) -> None:
+        self.query_id: int = query_id
+        self.gas_limit: int = gas_limit
+        self.withdrawal_amount: int = withdrawal_amount
+
+    def to_request_bytes(self) -> bytes:
+        main_body = b"".join([
+            self.query_id.to_bytes(8, byteorder="big"),
+            write_varuint(self.gas_limit),
+            write_varuint(self.withdrawal_amount)
+        ])
+        return b"".join([
+            (PayloadID.TONWHALES_POOL_WITHDRAW).to_bytes(4, byteorder="big"),
+            len(main_body).to_bytes(2, byteorder="big"),
+            main_body
+        ])
+
+    def to_message_body_cell(self) -> Cell:
+        return (
+            begin_cell()
+            .store_uint(0xda803efd, 32)
+            .store_uint(self.query_id, 64)
+            .store_coins(self.gas_limit)
+            .store_coins(self.withdrawal_amount)
+            .end_cell()
+        )
+
+
+class VestingSendMsgCommentPayload(Payload):
+    def __init__(self,
+                 comment: str,
+                 sendMode: SendMode,
+                 destination: Address,
+                 value: int,
+                 query_id: Optional[int] = None) -> None:
+        self.query_id: int = query_id if query_id is not None else 0
+        self.comment: str = comment
+        self.sendMode: SendMode = sendMode
+        self.destination: Address = destination
+        self.value: int = value
+
+    def to_request_bytes(self) -> bytes:
+        main_body = b"".join([
+            (b"".join([
+                bytes([1]),
+                self.query_id.to_bytes(8, byteorder="big")
+            ]) if self.query_id != 0 else bytes([0])),
+            self.sendMode.to_bytes(1, byteorder="big"),
+            write_address(self.destination),
+            write_varuint(self.value),
+            len(self.comment).to_bytes(1, byteorder="big"),
+            self.comment.encode("utf-8")
+        ])
+        return b"".join([
+            (PayloadID.VESTING_SEND_MSG_COMMENT).to_bytes(4, byteorder="big"),
+            len(main_body).to_bytes(2, byteorder="big"),
+            main_body
+        ])
+
+    def to_message_body_cell(self) -> Cell:
+
+        builder = (
+            begin_cell()
+            .store_uint(0xa7733acd, 32)
+            .store_uint(self.query_id, 64)
+            .store_uint(self.sendMode, 8)
+        )
+
+        body = begin_cell().store_uint(0, 32).store_bytes(self.comment.encode("utf-8")).end_cell()
+
+        msg_header = Contract.create_internal_message_header(
+            dest=self.destination,
+            bounce=True,
+            grams=self.value
+        )
+
+        common_msg_info = Contract.create_common_msg_info(header=msg_header, body=body)
+
+        builder.store_ref(common_msg_info)
+        return builder.end_cell()
 
 
 # pylint: disable-next=too-many-instance-attributes
