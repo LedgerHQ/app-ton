@@ -13,9 +13,9 @@
 #define HINT_BODY_SIZE  256
 
 #if defined(TARGET_STAX) || defined(TARGET_FLEX)
-#define ICON_APP_HOME      C_ledger_stax_ton_64
+#define ICON_APP_HOME C_ledger_stax_ton_64
 #elif defined(TARGET_APEX_P)
-#define ICON_APP_HOME      C_ledger_apex_p_ton_48
+#define ICON_APP_HOME C_ledger_apex_p_ton_48
 #endif
 
 /**
