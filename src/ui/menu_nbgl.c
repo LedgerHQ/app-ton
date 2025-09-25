@@ -106,7 +106,7 @@ static void ui_menu_common(uint8_t initPage) {
                                 &infoContents,
                                 NULL,
                                 app_quit);
-#else // defined(APEX_P)
+#else  // defined(APEX_P)
     nbgl_useCaseHomeAndSettings(APPNAME,
                                 &C_ledger_apex_p_ton_48,
                                 NULL,

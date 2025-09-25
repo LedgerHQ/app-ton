@@ -50,7 +50,7 @@ int ui_display_sign_data() {
                        NULL,
                        "Sign custom data",
                        on_review_choice);
-#else // defined(APEX_P)
+#else  // defined(APEX_P)
     nbgl_useCaseReview(TYPE_MESSAGE,
                        &pairList,
                        &C_ledger_apex_p_ton_48,

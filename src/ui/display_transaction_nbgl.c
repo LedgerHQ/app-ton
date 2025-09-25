@@ -117,7 +117,7 @@ static void ui_start_review() {
                        NULL,
                        g_transaction_finish_title,
                        on_review_choice);
-#else // defined(APEX_P)
+#else  // defined(APEX_P)
     nbgl_useCaseReview(op,
                        &pairList,
                        &C_ledger_apex_p_ton_48,

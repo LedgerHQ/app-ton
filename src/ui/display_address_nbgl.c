@@ -48,7 +48,7 @@ int ui_display_address(uint8_t flags) {
                               "Verify TON address",
                               NULL,
                               review_choice);
-#else // defined(APEX_P)
+#else  // defined(APEX_P)
     nbgl_useCaseAddressReview(g_address,
                               NULL,
                               &C_ledger_apex_p_ton_48,
