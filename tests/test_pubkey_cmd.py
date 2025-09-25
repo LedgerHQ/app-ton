@@ -26,9 +26,15 @@ def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
+            if firmware.device == "apex_p":
+                touch_pos = (52, 300)
+            elif firmware.device == "flex":
+                touch_pos = (80, 440)
+            elif firmware.device == "stax":
+                touch_pos = (65, 520)
             instructions = [
                 NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavIns(NavInsID.TOUCH, (65, 520) if firmware.device == "stax" else (80, 440)),
+                NavIns(NavInsID.TOUCH, touch_pos),
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
             ]
@@ -50,9 +56,15 @@ def test_get_public_key_confirm_accepted_v3r2(firmware, backend, navigator, test
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
+            if firmware.device == "apex_p":
+                touch_pos = (52, 300)
+            elif firmware.device == "flex":
+                touch_pos = (80, 440)
+            elif firmware.device == "stax":
+                touch_pos = (65, 520)
             instructions = [
                 NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavIns(NavInsID.TOUCH, (65, 520) if firmware.device == "stax" else (80, 440)),
+                NavIns(NavInsID.TOUCH, touch_pos),
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
             ]

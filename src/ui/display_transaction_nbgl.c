@@ -109,6 +109,7 @@ static void ui_start_review() {
         op |= BLIND_OPERATION;
     }
 
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
     nbgl_useCaseReview(op,
                        &pairList,
                        &C_ledger_stax_ton_64,
@@ -116,6 +117,15 @@ static void ui_start_review() {
                        NULL,
                        g_transaction_finish_title,
                        on_review_choice);
+#else // defined(APEX_P)
+    nbgl_useCaseReview(op,
+                       &pairList,
+                       &C_ledger_apex_p_ton_48,
+                       g_transaction_title,
+                       NULL,
+                       g_transaction_finish_title,
+                       on_review_choice);
+#endif
 }
 
 static void on_blind_choice2(bool proceed) {
@@ -143,7 +153,7 @@ static void on_blind_choice1(bool back_to_safety) {
 
 static void ui_show_blind_warning() {
     nbgl_useCaseChoice(
-        &C_Warning_64px,
+        &LARGE_WARNING_ICON,
         "Security risk detected",
         "It may not be safe to sign this transaction. To continue, you'll need to review the risk.",
         "Back to safety",
@@ -179,7 +189,7 @@ static void ui_blind_signing_error_choice(bool confirm) {
 }
 
 void ui_blind_signing_error() {
-    nbgl_useCaseChoice(&C_Warning_64px,
+    nbgl_useCaseChoice(&LARGE_WARNING_ICON,
                        "This message cannot\nbe clear-signed",
                        "Enable blind-signing in\nthe settings to sign\nthis transaction.",
                        "Exit",

@@ -151,12 +151,18 @@ def test_sign_tx_with_payload(firmware, backend, navigator, test_name):
                                         ],
                                         screen_change_before_first_instruction=False)
     else:
+        if firmware.device == "apex_p":
+            touch_pos_1 = (230, 85)
+            touch_pos_2 = (230, 185)
+        else:
+            touch_pos_1 = (354, 125)
+            touch_pos_2 = (354, 272)
         navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                         test_name + "/pretest",
                                         [
                                             NavInsID.USE_CASE_HOME_INFO,
-                                            NavIns(NavInsID.TOUCH, (354, 125)),
-                                            NavIns(NavInsID.TOUCH, (354, 272)),
+                                            NavIns(NavInsID.TOUCH, touch_pos_1),
+                                            NavIns(NavInsID.TOUCH, touch_pos_2),
                                             NavInsID.USE_CASE_SETTINGS_MULTI_PAGE_EXIT,
                                         ],
                                         screen_change_before_first_instruction=False)
@@ -236,12 +242,18 @@ def test_sign_tx_subwallet_id(firmware, backend, navigator, test_name):
                                         ],
                                         screen_change_before_first_instruction=False)
     else:
+        if firmware.device == "apex_p":
+            touch_pos_1 = (230, 85)
+            touch_pos_2 = (230, 185)
+        else:
+            touch_pos_1 = (354, 125)
+            touch_pos_2 = (354, 272)
         navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                         test_name + "/pretest",
                                         [
                                             NavInsID.USE_CASE_HOME_INFO,
-                                            NavIns(NavInsID.TOUCH, (354, 125)),
-                                            NavIns(NavInsID.TOUCH, (354, 272)),
+                                            NavIns(NavInsID.TOUCH, touch_pos_1),
+                                            NavIns(NavInsID.TOUCH, touch_pos_2),
                                             NavInsID.USE_CASE_SETTINGS_MULTI_PAGE_EXIT,
                                         ],
                                         screen_change_before_first_instruction=False)
@@ -399,12 +411,18 @@ def test_sign_tx_clear_jetton(firmware, backend, navigator, test_name):
                                         ],
                                         screen_change_before_first_instruction=False)
     else:
+        if firmware.device == "apex_p":
+            touch_pos_1 = (230, 85)
+            touch_pos_2 = (230, 185)
+        else:
+            touch_pos_1 = (354, 125)
+            touch_pos_2 = (354, 272)
         navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                         test_name + "/pretest",
                                         [
                                             NavInsID.USE_CASE_HOME_INFO,
-                                            NavIns(NavInsID.TOUCH, (354, 125)),
-                                            NavIns(NavInsID.TOUCH, (354, 272)),
+                                            NavIns(NavInsID.TOUCH, touch_pos_1),
+                                            NavIns(NavInsID.TOUCH, touch_pos_2),
                                             NavInsID.USE_CASE_SETTINGS_MULTI_PAGE_EXIT,
                                         ],
                                         screen_change_before_first_instruction=False)

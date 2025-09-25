@@ -53,12 +53,21 @@ int ui_display_proof(uint8_t flags) {
     pairList.nbMaxLinesForValue = 0;
     pairList.pairs = &pair;
 
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
     nbgl_useCaseAddressReview(g_address,
                               &pairList,
                               &C_ledger_stax_ton_64,
                               "Verify TON address\nto application",
                               NULL,
                               review_choice);
+#else // defined(APEX_P)
+    nbgl_useCaseAddressReview(g_address,
+                              &pairList,
+                              &C_ledger_apex_p_ton_48,
+                              "Verify TON address\nto application",
+                              NULL,
+                              review_choice);
+#endif
 
     return 0;
 }
