@@ -5,7 +5,6 @@ from ragger.error import ExceptionRAPDU
 from ragger.navigator import NavInsID, NavIns
 from utils import ROOT_SCREENSHOT_PATH
 
-
 # In this test we check that the GET_PUBLIC_KEY works in non-confirmation mode
 def test_get_public_key_no_confirm(backend):
     for path in ["m/44'/607'/0'/0'/0'/0'", "m/44'/607'/0'/0'/1'/0'"]:
@@ -26,9 +25,15 @@ def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
+            if firmware.device == "apex_p":
+                touch_pos = (52, 300) #QR CODE ICON position
+            elif firmware.device == "flex":
+                touch_pos = (80, 440) #QR CODE ICON position
+            elif firmware.device == "stax":
+                touch_pos = (65, 520) #QR CODE ICON position
             instructions = [
                 NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavIns(NavInsID.TOUCH, (65, 520) if firmware.device == "stax" else (80, 440)),
+                NavIns(NavInsID.TOUCH, touch_pos),
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
             ]
@@ -50,9 +55,15 @@ def test_get_public_key_confirm_accepted_v3r2(firmware, backend, navigator, test
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
+            if firmware.device == "apex_p":
+                touch_pos = (52, 300)
+            elif firmware.device == "flex":
+                touch_pos = (80, 440)
+            elif firmware.device == "stax":
+                touch_pos = (65, 520)
             instructions = [
                 NavInsID.SWIPE_CENTER_TO_LEFT,
-                NavIns(NavInsID.TOUCH, (65, 520) if firmware.device == "stax" else (80, 440)),
+                NavIns(NavInsID.TOUCH, touch_pos),
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
             ]

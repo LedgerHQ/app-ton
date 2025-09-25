@@ -28,12 +28,19 @@ def test_app_settings(firmware, backend, navigator, test_name):
                                         ],
                                         screen_change_before_first_instruction=False)
     else:
+        if firmware.device == "apex_p":
+            touch_pos_1 = (230, 85)
+            touch_pos_2 = (230, 185)
+        else:
+            touch_pos_1 = (354, 125)
+            touch_pos_2 = (354, 272)
+        
         navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                         test_name,
                                         [
                                             NavInsID.USE_CASE_HOME_INFO,
-                                            NavIns(NavInsID.TOUCH, (354, 125)),
-                                            NavIns(NavInsID.TOUCH, (354, 272)),
+                                            NavIns(NavInsID.TOUCH, touch_pos_1),
+                                            NavIns(NavInsID.TOUCH, touch_pos_2),
                                             NavInsID.USE_CASE_SETTINGS_NEXT,
                                             NavInsID.USE_CASE_SETTINGS_MULTI_PAGE_EXIT,
                                         ],

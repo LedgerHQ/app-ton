@@ -39,6 +39,13 @@ def test_get_proof_accepted(firmware, backend, navigator, test_name):
                     NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                     NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
                 ]
+            elif firmware.device == "apex_p":
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                    NavIns(NavInsID.TOUCH, (52, 300)),
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
+                ]
             else:
                 raise ValueError(f"Unsupported device: {firmware.device}")
             
@@ -78,6 +85,13 @@ def test_get_proof_accepted_v3r2(firmware, backend, navigator, test_name):
                 instructions = [
                     NavInsID.SWIPE_CENTER_TO_LEFT,
                     NavIns(NavInsID.TOUCH, (60, 520)),
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                    NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
+                ]
+            elif firmware.device == "apex_p":
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                    NavIns(NavInsID.TOUCH, (52, 300)),
                     NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                     NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
                 ]
@@ -131,6 +145,13 @@ def test_get_proof_refused(firmware, backend, navigator, test_name):
             instructions_set.append([
                 NavInsID.SWIPE_CENTER_TO_LEFT,
                 NavIns(NavInsID.TOUCH, (60, 520)),
+                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
+                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
+            ])
+        elif firmware.device == "apex_p":         
+            instructions_set.append([
+                NavInsID.SWIPE_CENTER_TO_LEFT,
+                NavIns(NavInsID.TOUCH, (52, 300)),
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
                 NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
             ])
