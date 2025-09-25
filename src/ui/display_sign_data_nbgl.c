@@ -42,23 +42,13 @@ int ui_display_sign_data() {
     pairList.nbPairs = G_context.sign_data_info.hints.hints_count;
     pairList.smallCaseForValue = false;
 
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
     nbgl_useCaseReview(TYPE_MESSAGE,
                        &pairList,
-                       &C_ledger_stax_ton_64,
+                       &ICON_APP_HOME,
                        "Sign custom data",
                        NULL,
                        "Sign custom data",
                        on_review_choice);
-#else  // defined(APEX_P)
-    nbgl_useCaseReview(TYPE_MESSAGE,
-                       &pairList,
-                       &C_ledger_apex_p_ton_48,
-                       "Sign custom data",
-                       NULL,
-                       "Sign custom data",
-                       on_review_choice);
-#endif
 
     return 0;
 }

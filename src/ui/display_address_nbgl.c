@@ -41,21 +41,13 @@ int ui_display_address(uint8_t flags) {
     if (!display_address(flags, g_address, sizeof(g_address), NULL, 0)) {
         return -1;
     }
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+
     nbgl_useCaseAddressReview(g_address,
                               NULL,
-                              &C_ledger_stax_ton_64,
+                              &ICON_APP_HOME,
                               "Verify TON address",
                               NULL,
                               review_choice);
-#else  // defined(APEX_P)
-    nbgl_useCaseAddressReview(g_address,
-                              NULL,
-                              &C_ledger_apex_p_ton_48,
-                              "Verify TON address",
-                              NULL,
-                              review_choice);
-#endif
 
     return 0;
 }

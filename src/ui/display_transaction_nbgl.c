@@ -109,23 +109,13 @@ static void ui_start_review() {
         op |= BLIND_OPERATION;
     }
 
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
     nbgl_useCaseReview(op,
                        &pairList,
-                       &C_ledger_stax_ton_64,
+                       &ICON_APP_HOME,
                        g_transaction_title,
                        NULL,
                        g_transaction_finish_title,
                        on_review_choice);
-#else  // defined(APEX_P)
-    nbgl_useCaseReview(op,
-                       &pairList,
-                       &C_ledger_apex_p_ton_48,
-                       g_transaction_title,
-                       NULL,
-                       g_transaction_finish_title,
-                       on_review_choice);
-#endif
 }
 
 static void on_blind_choice2(bool proceed) {

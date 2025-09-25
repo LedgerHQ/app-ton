@@ -23,6 +23,7 @@
 
 #include "../globals.h"
 #include "menu.h"
+#include "display.h"
 
 void app_quit(void) {
     // exit app here
@@ -97,25 +98,14 @@ static const nbgl_contentInfoList_t infoContents = {
 static void ui_menu_common(uint8_t initPage) {
     initialize_switches();
 
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
     nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_ledger_stax_ton_64,
+                                &ICON_APP_HOME,
                                 NULL,
                                 initPage,
                                 &settingsContents,
                                 &infoContents,
                                 NULL,
                                 app_quit);
-#else  // defined(APEX_P)
-    nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_ledger_apex_p_ton_48,
-                                NULL,
-                                initPage,
-                                &settingsContents,
-                                &infoContents,
-                                NULL,
-                                app_quit);
-#endif
 }
 
 void ui_menu_main(void) {
