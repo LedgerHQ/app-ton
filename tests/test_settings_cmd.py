@@ -30,8 +30,8 @@ def test_app_settings(backend, navigator, test_name):
                                         screen_change_before_first_instruction=False)
     else:
         if backend.device.type == DeviceType.APEX_P:
-            touch_pos_1 = (230, 85)
-            touch_pos_2 = (230, 185)
+            touch_pos_1 = (265, 95)
+            touch_pos_2 = (265, 215)
         else:
             touch_pos_1 = (354, 125)
             touch_pos_2 = (354, 272)
