@@ -380,6 +380,7 @@ def test_sign_tx_clear_jetton(backend, navigator, test_name):
     # First we need to get the public key of the device in order to build the transaction
     pubkey = client.get_public_key(path=path).data
 
+    # jetton wallet addresses for the owner EQDWey_FGPhd3phmerdVXi-zUIujfyO4-29y_VT1yD0medCi
     addresses = [
         "EQD0sKn8DbS12U015TWOSpYmyJYYDC_7sxg1upaMxnBvTiX8",
         "EQANxfGN1EgFPawYB1fhPqebKe1Nb6FIsaiekEecJ6R-3kYF",
@@ -391,6 +392,7 @@ def test_sign_tx_clear_jetton(backend, navigator, test_name):
         "EQBCgyCGsBV5mQetCF3NWcRfW_uI11KT1zJUwRoXLWk8N-LG",
         "EQDXTn8IvuNJTkDnTN9XQUZOqEYuYNhit1LgBTBnkJk55Vjj",
         "EQA3M981CTXeFtkeurrOs8Z-jcFwlHpkJO5DrwMC7zn0U-La",
+        "EQDWy3LycZWF-NlwGoFPVBoew1A89jIiUYiMAZ3ErEvSuezj",
     ]
 
     # Enable blind signing and expert mode

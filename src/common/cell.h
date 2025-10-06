@@ -5,4 +5,4 @@
 
 #include "types.h"
 
-bool hash_Cell(BitString_t *bits, CellRef_t *refs, uint8_t refs_count, CellRef_t *out);
+bool hash_Cell(BitString_t *bits, const CellRef_t *refs, uint8_t refs_count, CellRef_t *out);
