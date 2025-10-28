@@ -44,7 +44,6 @@ add_executable(test_crc16 test_crc16.c)
 add_executable(test_format_bigint test_format_bigint.c)
 add_executable(test_encoding test_encoding.c)
 add_executable(test_mybuffer test_mybuffer.c)
-add_executable(test_cell test_cell.c)
 
 add_library(base58 SHARED $ENV{BOLOS_SDK}/lib_standard_app/base58.c)
 add_library(bip32 SHARED $ENV{BOLOS_SDK}/lib_standard_app/bip32.c)
