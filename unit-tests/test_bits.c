@@ -108,12 +108,100 @@ static void test_addr(void **state) {
     assert_memory_equal(bits.data, expected, sizeof(expected));
 }
 
+static void test_finalize_padding(void **state) {
+    BitString_t bits;
+
+    // Case 0
+    // no padding needed
+    uint8_t expected_0[1] = {0x00};
+    BitString_init(&bits);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 0);
+    assert_memory_equal(bits.data, expected_0, 1);
+
+    // Case 1
+    // Bit pattern: 1 + (padding: 1 000000) = 1100 0000 = 0xC0
+    uint8_t expected_1[1] = {0xC0};
+    BitString_init(&bits);
+    BitString_storeBit(&bits, 1);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_1, sizeof(expected_1));
+
+    // Case 2
+    // Bit pattern: 10 + (padding: 1 00000) = 1010 0000 = 0xA0
+    uint8_t expected_2[1] = {0xA0};
+    BitString_init(&bits);
+    BitString_storeBit(&bits, 1);
+    BitString_storeBit(&bits, 0);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_2, sizeof(expected_2));
+
+    // Case 3
+    // Bit pattern: 101 + (padding: 1 0000) = 1011 0000 = 0xB0
+    uint8_t expected_3[1] = {0xB0};
+    BitString_init(&bits);
+    BitString_storeBit(&bits, 1);
+    BitString_storeBit(&bits, 0);
+    BitString_storeBit(&bits, 1);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_3, sizeof(expected_3));
+
+    // Case 4
+    // Bit pattern: 1010 + (padding: 1 000) = 1010 1000 = 0xA8
+    uint8_t expected_4[1] = {0xA8};
+    BitString_init(&bits);
+    BitString_storeUint(&bits, 0xA, 4);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_4, sizeof(expected_4));
+
+    // Case 5
+    // Bit pattern: 10101 + (padding: 1 00) = 1010 1100 = 0xAC
+    uint8_t expected_5[1] = {0xAC};
+    BitString_init(&bits);
+    BitString_storeUint(&bits, 0x15, 5);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_5, sizeof(expected_5));
+
+    // Case 6
+    // Bit pattern: 101010 + (padding: 1 0) = 1010 1010 = 0xAA
+    uint8_t expected_6[1] = {0xAA};
+    BitString_init(&bits);
+    BitString_storeUint(&bits, 0x2A, 6);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_6, sizeof(expected_6));
+
+    // Case 7
+    // Bit pattern: 1010101 + (padding: 1) = 1010 1011 = 0xAB
+    uint8_t expected_7[1] = {0xAB};
+    BitString_init(&bits);
+    BitString_storeUint(&bits, 0x55, 7);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_7, sizeof(expected_7));
+
+    // Case 8
+    // no padding needed
+    uint8_t expected_8[1] = {0xFF};
+    BitString_init(&bits);
+    BitString_storeUint(&bits, 0xFF, 8);
+    BitString_finalize(&bits);
+    assert_int_equal(bits.data_cursor, 8);
+    assert_memory_equal(bits.data, expected_8, sizeof(expected_8));
+}
+
 int main() {
     const struct CMUnitTest tests[] = {cmocka_unit_test(test_bits),
                                        cmocka_unit_test(test_bits_2),
                                        cmocka_unit_test(test_coins_buf),
                                        cmocka_unit_test(test_null_addr),
-                                       cmocka_unit_test(test_addr)};
+                                       cmocka_unit_test(test_addr),
+                                       cmocka_unit_test(test_finalize_padding)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
