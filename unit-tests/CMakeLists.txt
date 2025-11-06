@@ -37,6 +37,7 @@ add_compile_definitions(TEST)
 
 include_directories(../src)
 include_directories($ENV{BOLOS_SDK}/lib_standard_app)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}) 
 
 add_executable(test_bits test_bits.c)
 add_executable(test_base64 test_base64.c)
@@ -44,6 +45,7 @@ add_executable(test_crc16 test_crc16.c)
 add_executable(test_format_bigint test_format_bigint.c)
 add_executable(test_encoding test_encoding.c)
 add_executable(test_mybuffer test_mybuffer.c)
+add_executable(test_cell test_cell.c)
 
 add_library(base58 SHARED $ENV{BOLOS_SDK}/lib_standard_app/base58.c)
 add_library(bip32 SHARED $ENV{BOLOS_SDK}/lib_standard_app/bip32.c)
@@ -63,10 +65,12 @@ add_library(format_address SHARED ../src/common/format_address.c)
 add_library(strlcpy_impl SHARED strlcpy_impl.c)
 add_library(mybuffer SHARED ../src/common/mybuffer.c)
 add_library(myread SHARED ../src/common/myread.c)
+add_library(cell SHARED ../src/common/cell.c)
 
 target_link_libraries(int256 strlcpy_impl)
 target_link_libraries(format_bigint int256)
 target_link_libraries(format_address crc16)
+target_link_libraries(cell bits)
 
 target_link_libraries(test_bits PUBLIC cmocka gcov bits)
 target_link_libraries(test_base64 PUBLIC cmocka gcov base64)
@@ -75,7 +79,7 @@ target_link_libraries(test_format_bigint PUBLIC cmocka gcov format_bigint)
 target_link_libraries(test_encoding PUBLIC cmocka gcov encoding)
 target_link_libraries(test_mybuffer PUBLIC
                       mybuffer
-                      myread 
+                      myread
                       buffer
                       bip32
                       cmocka
@@ -85,6 +89,13 @@ target_link_libraries(test_mybuffer PUBLIC
                       read
                       )
 
+target_link_libraries(test_cell PUBLIC
+                      cell
+                      bits
+                      cmocka
+                      gcov
+                      )
+
 
 add_test(test_bits test_bits)
 add_test(test_base64 test_base64)
@@ -92,3 +103,4 @@ add_test(test_crc16 test_crc16)
 add_test(test_format_bigint test_format_bigint)
 add_test(test_encoding test_encoding)
 add_test(test_mybuffer test_mybuffer)
+add_test(test_cell test_cell)
