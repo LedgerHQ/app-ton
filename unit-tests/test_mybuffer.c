@@ -27,6 +27,16 @@ static void test_read_bool_valid(void **state) {
     assert_int_equal(buf.offset, 1);
 }
 
+// Test buffer_read_bool with insufficient buffer
+static void test_read_bool_insufficient(void **state) {
+    uint8_t data[] = {0x01};
+    buffer_t buf = {.ptr = data, .size = 1, .offset = 1};
+    bool value = true;
+
+    assert_false(buffer_read_bool(&buf, &value));
+    assert_false(value);
+}
+
 static void test_read_bool_invalid(void **state) {
     uint8_t data_invalid[] = {0x02};
     buffer_t buf = {.ptr = data_invalid, .size = sizeof(data_invalid), .offset = 0};
@@ -167,6 +177,16 @@ static void test_read_varuint_out_too_small(void **state) {
     assert_false(buffer_read_varuint(&buf, &out_size, out, sizeof(out)));
 }
 
+// Test buffer_read_varuint with no size byte available
+static void test_read_varuint_no_size_byte(void **state) {
+    uint8_t data[] = {0x01};
+    buffer_t buf = {.ptr = data, .size = 1, .offset = 1};
+    uint8_t out[5];
+    uint8_t out_size = 0;
+
+    assert_false(buffer_read_varuint(&buf, &out_size, out, sizeof(out)));
+}
+
 // Test buffer_read_address
 static void test_read_address(void **state) {
     uint8_t data[33] = {0xFF};  // chain=0xFF + 32 bytes hash
@@ -187,7 +207,16 @@ static void test_read_address(void **state) {
 
 // Test buffer_read_address with insufficient data
 static void test_read_address_insufficient(void **state) {
-    uint8_t data[10] = {0};  // Not enough for full address
+    uint8_t data[0];
+    buffer_t buf = {.ptr = data, .size = sizeof(data), .offset = 0};
+    address_t addr = {0};
+
+    assert_false(buffer_read_address(&buf, &addr));
+}
+
+// Test buffer_read_address with chain but no hash
+static void test_read_address_partial(void **state) {
+    uint8_t data[10] = {0xAA, 0x01, 0x02};
     buffer_t buf = {.ptr = data, .size = sizeof(data), .offset = 0};
     address_t addr = {0};
 
@@ -214,7 +243,7 @@ static void test_read_cell_ref(void **state) {
 
 // Test buffer_read_cell_ref with insufficient data
 static void test_read_cell_ref_insufficient(void **state) {
-    uint8_t data[10] = {0};  // Not enough for full cell ref
+    uint8_t data[0];
     buffer_t buf = {.ptr = data, .size = sizeof(data), .offset = 0};
     CellRef_t cell = {0};
 
@@ -224,6 +253,7 @@ static void test_read_cell_ref_insufficient(void **state) {
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_read_bool_valid),
+        cmocka_unit_test(test_read_bool_insufficient),
         cmocka_unit_test(test_read_bool_invalid),
         cmocka_unit_test(test_read_u48_be),
         cmocka_unit_test(test_read_u48_le),
@@ -236,8 +266,10 @@ int main() {
         cmocka_unit_test(test_read_varuint_valid),
         cmocka_unit_test(test_read_varuint_size_too_large),
         cmocka_unit_test(test_read_varuint_out_too_small),
+        cmocka_unit_test(test_read_varuint_no_size_byte),
         cmocka_unit_test(test_read_address),
         cmocka_unit_test(test_read_address_insufficient),
+        cmocka_unit_test(test_read_address_partial),
         cmocka_unit_test(test_read_cell_ref),
         cmocka_unit_test(test_read_cell_ref_insufficient)
     };
