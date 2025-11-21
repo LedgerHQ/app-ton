@@ -18,4 +18,4 @@
  * @return zero or positive integer if success, negative integer otherwise.
  *
  */
-int handler_sign_data(buffer_t *cdata, bool first, bool more);
+int handler_sign_data(buffer_t *cdata, bool first, bool more, bool new_format);

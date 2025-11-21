@@ -32,7 +32,7 @@
 #include "../common/bip32_check.h"
 #include "../sign_data/sign_data_deserialize.h"
 
-int handler_sign_data(buffer_t *cdata, bool first, bool more) {
+int handler_sign_data(buffer_t *cdata, bool first, bool more, bool new_format) {
     if (first) {  // first APDU, parse BIP32 path
         explicit_bzero(&G_context, sizeof(G_context));
 
@@ -50,10 +50,16 @@ int handler_sign_data(buffer_t *cdata, bool first, bool more) {
         G_context.req_type = CONFIRM_SIGN_DATA;
         G_context.state = STATE_NONE;
 
+        G_context.sign_data_info.new_format = new_format;
+
         return io_send_sw(SW_OK);
     }
 
     if (G_context.req_type != CONFIRM_SIGN_DATA) {
+        return io_send_sw(SW_BAD_STATE);
+    }
+
+    if (new_format != G_context.sign_data_info.new_format) {
         return io_send_sw(SW_BAD_STATE);
     }
 
@@ -71,6 +77,12 @@ int handler_sign_data(buffer_t *cdata, bool first, bool more) {
 
     if (more) {
         return io_send_sw(SW_OK);
+    }
+
+    if (crypto_derive_public_key(G_context.bip32_path,
+        G_context.bip32_path_len,
+        G_context.sign_data_info.raw_public_key) < 0) {
+        return io_send_sw(SW_BAD_STATE);
     }
 
     buffer_t buf = {.ptr = G_context.sign_data_info.raw_data,

@@ -50,7 +50,7 @@ bool deserialize_proof(buffer_t *cdata, uint8_t flags) {
             return io_send_sw(SW_WRONG_DATA_LENGTH);
         }
     } else {
-        G_context.proof_info.subwallet_id = 698983191;
+        G_context.proof_info.subwallet_id = DEFAULT_SUBWALLET_ID;
         G_context.proof_info.is_v3r2 = false;
     }
 

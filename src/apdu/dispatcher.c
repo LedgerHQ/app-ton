@@ -111,7 +111,7 @@ int apdu_dispatcher(const command_t *cmd) {
 
             return handler_get_address_proof(cmd->p2, &buf);
         case SIGN_DATA:
-            if (cmd->p1 != P1_NONE) {
+            if (cmd->p1 != P1_SIGN_DATA_OLD && cmd->p1 != P1_SIGN_DATA_NEW) {
                 return io_send_sw(SW_WRONG_P1P2);
             }
 
@@ -131,7 +131,7 @@ int apdu_dispatcher(const command_t *cmd) {
             buf.size = cmd->lc;
             buf.offset = 0;
 
-            return handler_sign_data(&buf, (bool) (cmd->p2 & P2_FIRST), (bool) (cmd->p2 & P2_MORE));
+            return handler_sign_data(&buf, (bool) (cmd->p2 & P2_FIRST), (bool) (cmd->p2 & P2_MORE), (bool) (cmd->p1 == P1_SIGN_DATA_NEW));
         case GET_APP_SETTINGS:
             if (cmd->p1 != P1_NONE || cmd->p2 != P2_NONE) {
                 return io_send_sw(SW_WRONG_P1P2);
