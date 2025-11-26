@@ -42,6 +42,7 @@
 #include "helpers/display_address.h"
 #include "helpers/display_proof.h"
 #include "helpers/display_transaction.h"
+#include "../transaction/transaction_hints.h"
 
 static action_validate_cb g_validate_callback;
 static char g_operation[G_OPERATION_LEN];
@@ -237,8 +238,13 @@ int ui_display_transaction() {
     if (G_context.tx_info.transaction.is_blind) {
         ux_approval_flow[step++] = &ux_display_blind_signing_warning_step;
     }
-    ux_approval_flow[step++] = &ux_display_address_step;
-    ux_approval_flow[step++] = &ux_display_amount_step;
+
+    bool is_jetton = (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON);
+
+    if (N_storage.expert_mode || !is_jetton) {
+        ux_approval_flow[step++] = &ux_display_address_step;
+        ux_approval_flow[step++] = &ux_display_amount_step;
+    }
     if (G_context.tx_info.transaction.has_payload && G_context.tx_info.transaction.is_blind) {
         ux_approval_flow[step++] = &ux_display_payload_step;
     }

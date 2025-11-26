@@ -22,6 +22,7 @@
 #include "menu.h"
 #include "helpers/display_transaction.h"
 #include "hint_buffers_nbgl.h"
+#include "../transaction/transaction_hints.h"
 
 static char g_operation[G_OPERATION_LEN];
 static char g_amount[G_AMOUNT_LEN];
@@ -84,13 +85,17 @@ static void ui_start_review() {
     pairs[pairIndex].value = g_operation;
     pairIndex++;
 
-    pairs[pairIndex].item = "Amount";
-    pairs[pairIndex].value = g_amount;
-    pairIndex++;
+    bool is_jetton = (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON);
 
-    pairs[pairIndex].item = g_address_title;
-    pairs[pairIndex].value = g_address;
-    pairIndex++;
+    if (N_storage.expert_mode || !is_jetton) {
+        pairs[pairIndex].item = "Amount";
+        pairs[pairIndex].value = g_amount;
+        pairIndex++;
+
+        pairs[pairIndex].item = g_address_title;
+        pairs[pairIndex].value = g_address;
+        pairIndex++;
+    }
 
     if (G_context.tx_info.transaction.has_payload && G_context.tx_info.transaction.is_blind) {
         pairs[pairIndex].item = "Payload";
