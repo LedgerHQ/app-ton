@@ -85,7 +85,6 @@ typedef struct {
     HintHolder_t hints;
     bool new_format;
     uint8_t type_id;
-    bool display_testnet;
     uint8_t raw_public_key[PUBKEY_LEN];
     int32_t workchain;
     uint32_t subwallet_id;

@@ -137,7 +137,7 @@ bool sign_data_deserialize_old(buffer_t* buf, sign_data_ctx_t* ctx) {
             if (has_address) {
                 address_t addr;
                 SAFE(buffer_read_address(buf, &addr));
-                add_hint_address(&ctx->hints, "Contract address", addr, true);
+                add_hint_address(&ctx->hints, "Contract address", addr, true, false);
                 BitString_storeBit(&bits, 1);
                 BitString_storeAddress(&bits, addr.chain, addr.hash);
             } else {
@@ -223,7 +223,7 @@ bool sign_data_deserialize_new(buffer_t* buf, sign_data_ctx_t* ctx) {
     uint8_t address_flags;
     SAFE(buffer_read_u8(buf, &address_flags));
 
-    ctx->display_testnet = (address_flags & P2_ADDR_FLAG_TESTNET) > 0;
+    bool display_testnet = (address_flags & P2_ADDR_FLAG_TESTNET) > 0;
 
     ctx->workchain = (address_flags & P2_ADDR_FLAG_MASTERCHAIN) > 0 ? -1 : 0;
 
@@ -258,7 +258,7 @@ bool sign_data_deserialize_new(buffer_t* buf, sign_data_ctx_t* ctx) {
     addr.chain = ctx->workchain == -1 ? 0xff : 0;
     memmove(addr.hash, ctx->address_hash, HASH_LEN);
 
-    add_hint_address(&ctx->hints, "Wallet address", addr, false);
+    add_hint_address(&ctx->hints, "Wallet address", addr, false, display_testnet);
 
     add_hint_text(&ctx->hints, "App domain", (char*) app_domain, app_domain_len);
 

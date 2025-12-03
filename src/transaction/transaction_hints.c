@@ -184,6 +184,7 @@ bool process_hints(transaction_t* tx) {
             &tx->hints,
             tx->hints_type == TRANSACTION_TRANSFER_JETTON ? "Send jetton to" : "New owner",
             destination,
+            false,
             false);
 
         address_t response;
@@ -194,7 +195,7 @@ bool process_hints(transaction_t* tx) {
 #else
         if (N_storage.expert_mode) {
 #endif
-            add_hint_address(&tx->hints, "Send excess to", response, false);
+            add_hint_address(&tx->hints, "Send excess to", response, false, false);
         }
 
         // custom payload
@@ -305,7 +306,7 @@ bool process_hints(transaction_t* tx) {
 #else
         if (N_storage.expert_mode) {
 #endif
-            add_hint_address(&tx->hints, "Send excess to", response, false);
+            add_hint_address(&tx->hints, "Send excess to", response, false, false);
         }
 
         // custom payload
@@ -387,6 +388,7 @@ bool process_hints(transaction_t* tx) {
             &tx->hints,
             tx->hints_type == TRANSACTION_ADD_WHITELIST ? "New whitelist" : "New validator",
             addr,
+            false,
             false);
 
         CHECK_END();
@@ -495,7 +497,7 @@ bool process_hints(transaction_t* tx) {
         SAFE(buffer_read_address(&buf, &voting_address));
         BitString_storeAddress(&bits, voting_address.chain, voting_address.hash);
 
-        add_hint_address(&tx->hints, "Voting address", voting_address, true);
+        add_hint_address(&tx->hints, "Voting address", voting_address, true, false);
 
         uint64_t expiration_date;
         SAFE(buffer_read_u48(&buf, &expiration_date, BE));
@@ -564,7 +566,7 @@ bool process_hints(transaction_t* tx) {
                     SAFE(buffer_read_bool(&buf, &is_wallet));
                 }
 
-                add_hint_address(&tx->hints, "Wallet address", address, !is_wallet);
+                add_hint_address(&tx->hints, "Wallet address", address, !is_wallet, false);
 
                 BitString_t inner_bits;
                 BitString_init(&inner_bits);
@@ -746,7 +748,7 @@ bool process_hints(transaction_t* tx) {
         address_t dest_address;
         SAFE(buffer_read_address(&buf, &dest_address));
 
-        add_hint_address(&tx->hints, "Destination", dest_address, true);
+        add_hint_address(&tx->hints, "Destination", dest_address, true, false);
 
         // msg value
         uint8_t amount_size;

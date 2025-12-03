@@ -33,6 +33,7 @@ typedef struct {
 typedef struct {
     address_t address;
     bool bounceable;
+    bool display_testnet;
 } HintAddress_t;
 
 typedef struct {
@@ -67,7 +68,7 @@ void add_hint_amount(HintHolder_t* hints,
                      uint8_t* value,
                      uint8_t value_len,
                      uint8_t decimals);
-void add_hint_address(HintHolder_t* hints, const char* title, address_t address, bool bounceable);
+void add_hint_address(HintHolder_t* hints, const char* title, address_t address, bool bounceable, bool display_testnet);
 void add_hint_number(HintHolder_t* hints, const char* title, uint64_t number);
 void add_hint_bool(HintHolder_t* hints, const char* title, bool value);
 void add_hint_hex(HintHolder_t* hints, const char* title, uint8_t* data, uint8_t data_len);
