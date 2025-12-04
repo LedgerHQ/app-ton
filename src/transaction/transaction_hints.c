@@ -163,6 +163,8 @@ bool process_hints(transaction_t* tx) {
                                 amount_buf,
                                 amount_size,
                                 decimals);
+
+                G_context.tx_info.transaction.is_known_jetton = true;
 #else
                 return false;
 #endif

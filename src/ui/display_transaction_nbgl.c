@@ -85,13 +85,16 @@ static void ui_start_review() {
     pairs[pairIndex].value = g_operation;
     pairIndex++;
 
-    bool is_jetton = (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON);
+    bool is_known_jetton = G_context.tx_info.transaction.is_known_jetton;
 
-    if (N_storage.expert_mode || !is_jetton) {
+    // value_decimal_len == 10 means the value is at least 1 TON
+    if (N_storage.expert_mode || !is_known_jetton || G_context.tx_info.transaction.value_decimal_len >= 10) {
         pairs[pairIndex].item = "Amount";
         pairs[pairIndex].value = g_amount;
         pairIndex++;
+    }
 
+    if (N_storage.expert_mode || !is_known_jetton) {
         pairs[pairIndex].item = g_address_title;
         pairs[pairIndex].value = g_address;
         pairIndex++;

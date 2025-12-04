@@ -239,12 +239,17 @@ int ui_display_transaction() {
         ux_approval_flow[step++] = &ux_display_blind_signing_warning_step;
     }
 
-    bool is_jetton = (G_context.tx_info.transaction.hints_type == TRANSACTION_TRANSFER_JETTON);
+    bool is_known_jetton = G_context.tx_info.transaction.is_known_jetton;
 
-    if (N_storage.expert_mode || !is_jetton) {
+    if (N_storage.expert_mode || !is_known_jetton) {
         ux_approval_flow[step++] = &ux_display_address_step;
+    }
+
+    // value_decimal_len == 10 means the value is at least 1 TON
+    if (N_storage.expert_mode || !is_known_jetton || G_context.tx_info.transaction.value_decimal_len >= 10) {
         ux_approval_flow[step++] = &ux_display_amount_step;
     }
+
     if (G_context.tx_info.transaction.has_payload && G_context.tx_info.transaction.is_blind) {
         ux_approval_flow[step++] = &ux_display_payload_step;
     }
