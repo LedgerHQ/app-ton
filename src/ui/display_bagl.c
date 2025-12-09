@@ -246,7 +246,8 @@ int ui_display_transaction() {
     }
 
     // value_decimal_len == 10 means the value is at least 1 TON
-    if (N_storage.expert_mode || !is_known_jetton || G_context.tx_info.transaction.value_decimal_len >= 10) {
+    if (N_storage.expert_mode || !is_known_jetton ||
+        G_context.tx_info.transaction.value_decimal_len >= 10) {
         ux_approval_flow[step++] = &ux_display_amount_step;
     }
 

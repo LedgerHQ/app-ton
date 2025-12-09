@@ -88,7 +88,8 @@ static void ui_start_review() {
     bool is_known_jetton = G_context.tx_info.transaction.is_known_jetton;
 
     // value_decimal_len == 10 means the value is at least 1 TON
-    if (N_storage.expert_mode || !is_known_jetton || G_context.tx_info.transaction.value_decimal_len >= 10) {
+    if (N_storage.expert_mode || !is_known_jetton ||
+        G_context.tx_info.transaction.value_decimal_len >= 10) {
         pairs[pairIndex].item = "Amount";
         pairs[pairIndex].value = g_amount;
         pairIndex++;

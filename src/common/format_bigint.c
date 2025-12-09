@@ -94,11 +94,11 @@ static bool adjustDecimals(const char *src,
 }
 
 int amountToString(const uint8_t *amount,
-                    uint8_t amount_size,
-                    uint8_t decimals,
-                    const char *ticker,
-                    char *out_buffer,
-                    size_t out_buffer_size) {
+                   uint8_t amount_size,
+                   uint8_t decimals,
+                   const char *ticker,
+                   char *out_buffer,
+                   size_t out_buffer_size) {
     char tmp_buffer[100] = {0};
 
     if (!uint256_to_decimal(amount, amount_size, tmp_buffer, sizeof(tmp_buffer))) {
@@ -114,10 +114,10 @@ int amountToString(const uint8_t *amount,
     }
 
     if (!adjustDecimals(tmp_buffer,
-                       amount_len,
-                       out_buffer + ticker_len,
-                       out_buffer_size - ticker_len,
-                       decimals)) {
+                        amount_len,
+                        out_buffer + ticker_len,
+                        out_buffer_size - ticker_len,
+                        decimals)) {
         return -1;
     }
 

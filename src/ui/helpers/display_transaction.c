@@ -35,11 +35,11 @@ bool display_transaction(char *g_operation,
         G_context.tx_info.transaction.value_decimal_len = INT32_MAX;
     } else {
         int value_decimal_len = amountToString(G_context.tx_info.transaction.value_buf,
-            G_context.tx_info.transaction.value_len,
-            EXPONENT_SMALLEST_UNIT,
-            "TON",
-            g_amount,
-            g_amount_len);
+                                               G_context.tx_info.transaction.value_len,
+                                               EXPONENT_SMALLEST_UNIT,
+                                               "TON",
+                                               g_amount,
+                                               g_amount_len);
         if (value_decimal_len <= 0) {
             io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
             return false;

@@ -25,8 +25,8 @@
  *
  */
 int amountToString(const uint8_t *amount,
-                    uint8_t amount_size,
-                    uint8_t decimals,
-                    const char *ticker,
-                    char *out_buffer,
-                    size_t out_buffer_size);
+                   uint8_t amount_size,
+                   uint8_t decimals,
+                   const char *ticker,
+                   char *out_buffer,
+                   size_t out_buffer_size);
