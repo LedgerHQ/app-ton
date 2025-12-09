@@ -4,7 +4,7 @@ from application_client.ton_command_sender import BoilerplateCommandSender, Erro
 from application_client.ton_response_unpacker import unpack_sign_data_response
 from application_client.ton_sign_data import PlaintextSignDataRequest, SignDataRequest, AppDataSignDataRequest, PlaintextSignDataNewRequest, BinarySignDataNewRequest, CellSignDataNewRequest, SignDataNewRequest
 from ragger.error import ExceptionRAPDU
-from ragger.navigator import NavInsID
+from ragger.navigator import NavInsID, NavIns
 from ledgered.devices import DeviceType
 from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
 from typing import List
@@ -27,6 +27,41 @@ def test_sign_data(backend, navigator, test_name):
         AppDataSignDataRequest(Cell(), address=Address("0:" + "0" * 64), domain="test.ton", ext=Cell())
     ]
 
+    # Enable blind signing and expert mode
+    if backend.device.is_nano:
+        navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
+                                        test_name + "/pretest",
+                                        [
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                        ],
+                                        screen_change_before_first_instruction=False)
+    else:
+        if backend.device.type == DeviceType.APEX_P:
+            touch_pos_1 = (265, 95)
+            touch_pos_2 = (265, 215)
+        else:
+            touch_pos_1 = (354, 125)
+            touch_pos_2 = (354, 272)
+        navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
+                                        test_name + "/pretest",
+                                        [
+                                            NavInsID.USE_CASE_HOME_INFO,
+                                            NavIns(NavInsID.TOUCH, touch_pos_1),
+                                            NavIns(NavInsID.TOUCH, touch_pos_2),
+                                            NavInsID.USE_CASE_SETTINGS_MULTI_PAGE_EXIT,
+                                        ],
+                                        screen_change_before_first_instruction=False)
+
     for (i, request) in enumerate(requests):
         # Send the sign device instruction.
         # As it requires on-screen validation, the function is asynchronous.
@@ -40,9 +75,16 @@ def test_sign_data(backend, navigator, test_name):
                                                             ROOT_SCREENSHOT_PATH,
                                                             test_name + f"/part{i}")
             else:
-                navigator.navigate([
-                                       NavInsID.SWIPE_CENTER_TO_LEFT,
-                                   ])
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                ]
+                if type(request) != PlaintextSignDataRequest:
+                    pre = [
+                        NavInsID.USE_CASE_CHOICE_REJECT,
+                        NavInsID.USE_CASE_CHOICE_CONFIRM,
+                    ]
+                    instructions = pre + instructions
+                navigator.navigate(instructions)
                 navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
                                                             [NavInsID.USE_CASE_REVIEW_CONFIRM,
                                                             NavInsID.USE_CASE_STATUS_DISMISS],
@@ -117,6 +159,41 @@ def test_sign_data_new(backend, navigator, test_name):
         PlaintextSignDataNewRequest("a" * 120, "test." * 24 + "ab.ton"), # app domain length = 126
     ]
 
+    # Enable blind signing and expert mode
+    if backend.device.is_nano:
+        navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
+                                        test_name + "/pretest",
+                                        [
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                            NavInsID.RIGHT_CLICK,
+                                            NavInsID.BOTH_CLICK,
+                                        ],
+                                        screen_change_before_first_instruction=False)
+    else:
+        if backend.device.type == DeviceType.APEX_P:
+            touch_pos_1 = (265, 95)
+            touch_pos_2 = (265, 215)
+        else:
+            touch_pos_1 = (354, 125)
+            touch_pos_2 = (354, 272)
+        navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
+                                        test_name + "/pretest",
+                                        [
+                                            NavInsID.USE_CASE_HOME_INFO,
+                                            NavIns(NavInsID.TOUCH, touch_pos_1),
+                                            NavIns(NavInsID.TOUCH, touch_pos_2),
+                                            NavInsID.USE_CASE_SETTINGS_MULTI_PAGE_EXIT,
+                                        ],
+                                        screen_change_before_first_instruction=False)
+
     for (i, request) in enumerate(requests):
         # Send the sign device instruction.
         # As it requires on-screen validation, the function is asynchronous.
@@ -130,9 +207,16 @@ def test_sign_data_new(backend, navigator, test_name):
                                                             ROOT_SCREENSHOT_PATH,
                                                             test_name + f"/part{i}")
             else:
-                navigator.navigate([
-                                       NavInsID.SWIPE_CENTER_TO_LEFT,
-                                   ])
+                instructions = [
+                    NavInsID.SWIPE_CENTER_TO_LEFT,
+                ]
+                if type(request) != PlaintextSignDataNewRequest:
+                    pre = [
+                        NavInsID.USE_CASE_CHOICE_REJECT,
+                        NavInsID.USE_CASE_CHOICE_CONFIRM,
+                    ]
+                    instructions = pre + instructions
+                navigator.navigate(instructions)
                 navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
                                                             [NavInsID.USE_CASE_REVIEW_CONFIRM,
                                                             NavInsID.USE_CASE_STATUS_DISMISS],
