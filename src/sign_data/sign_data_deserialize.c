@@ -114,8 +114,12 @@ bool sign_data_deserialize_old(buffer_t* buf, sign_data_ctx_t* ctx) {
     CellRef_t refs[4] = {0};
     int cur_ref = 0;
 
+    ctx->is_blind = true;
+
     switch (ctx->schema_crc) {
         case PLAINTEXT_REQUEST: {
+            ctx->is_blind = false;
+
             size_t len = buffer_remaining(buf);
             if (len > MAX_PLAINTEXT_LENGTH) {
                 return false;
@@ -262,8 +266,12 @@ bool sign_data_deserialize_new(buffer_t* buf, sign_data_ctx_t* ctx) {
 
     add_hint_text(&ctx->hints, "App domain", (char*) app_domain, app_domain_len);
 
+    ctx->is_blind = true;
+
     switch (ctx->type_id) {
         case TEXT_TYPE_ID: {
+            ctx->is_blind = false;
+
             size_t len = buffer_remaining(buf);
             if (len > MAX_PLAINTEXT_LENGTH) {
                 return false;

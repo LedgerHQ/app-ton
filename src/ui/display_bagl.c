@@ -276,11 +276,17 @@ int ui_display_sign_data() {
     // Configure Flow
     int step = 0;
     ux_approval_flow[step++] = &ux_display_sign_custom_data_step;
+
+    if (G_context.sign_data_info.is_blind) {
+        ux_approval_flow[step++] = &ux_display_blind_signing_warning_step;
+    }
+
     g_hint_holder = &G_context.sign_data_info.hints;
-    g_hint_offset = -1;
+    g_hint_offset = -step;
     for (uint16_t i = 0; i < G_context.sign_data_info.hints.hints_count; i++) {
         ux_approval_flow[step++] = &ux_display_hint_step;
     }
+
     ux_approval_flow[step++] = &ux_display_approve_step;
     ux_approval_flow[step++] = &ux_display_reject_step;
     ux_approval_flow[step++] = FLOW_END_STEP;

@@ -95,6 +95,11 @@ int handler_sign_data(buffer_t *cdata, bool first, bool more, bool new_format) {
         return io_send_sw(SW_SIGN_DATA_PARSING_FAIL);
     }
 
+    if (G_context.sign_data_info.is_blind && !N_storage.blind_signing_enabled) {
+        ui_blind_signing_error();
+        return io_send_sw(SW_BLIND_SIGNING_DISABLED);
+    }
+
     G_context.state = STATE_PARSED;
 
     return ui_display_sign_data();

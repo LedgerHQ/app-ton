@@ -91,6 +91,7 @@ typedef struct {
     bool is_v3r2;
     uint8_t address_hash[HASH_LEN];
     uint8_t data_hash[HASH_LEN];
+    bool is_blind;
 } sign_data_ctx_t;
 
 /**
