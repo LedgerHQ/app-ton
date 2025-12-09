@@ -188,7 +188,12 @@ class BoilerplateCommandSender:
             yield response
 
     @contextmanager
-    def sign_data(self, path: str, data: bytes, new_format: bool = False) -> Generator[None, None, None]:
+    def sign_data(
+        self,
+        path: str,
+        data: bytes,
+        new_format: bool = False,
+    ) -> Generator[None, None, None]:
         if new_format:
             p1 = P1.P1_SIGN_DATA_NEW
         else:

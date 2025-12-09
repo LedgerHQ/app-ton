@@ -16,12 +16,12 @@
 #include "../types.h"
 #include "../apdu/params.h"
 
-#define PLAINTEXT_REQUEST          0x754bf91b
-#define APP_DATA_REQUEST           0x54b58535
+#define PLAINTEXT_REQUEST 0x754bf91b
+#define APP_DATA_REQUEST  0x54b58535
 
-#define TEXT_TYPE_ID               0x00
-#define BINARY_TYPE_ID             0x01
-#define CELL_TYPE_ID               0x02
+#define TEXT_TYPE_ID   0x00
+#define BINARY_TYPE_ID 0x01
+#define CELL_TYPE_ID   0x02
 
 #define MAX_PLAINTEXT_LENGTH       120
 #define MAX_APP_DATA_DOMAIN_LENGTH 126  // max allowed domain len as per TON DNS spec
@@ -247,10 +247,10 @@ bool sign_data_deserialize_new(buffer_t* buf, sign_data_ctx_t* ctx) {
     SAFE(buffer_read_u64(buf, &ctx->timestamp, BE));
 
     if (!pubkey_to_hash(ctx->raw_public_key,
-        ctx->subwallet_id,
-        ctx->is_v3r2,
-        ctx->address_hash,
-        sizeof(ctx->address_hash))) {
+                        ctx->subwallet_id,
+                        ctx->is_v3r2,
+                        ctx->address_hash,
+                        sizeof(ctx->address_hash))) {
         return false;
     }
 
@@ -329,8 +329,11 @@ bool sign_data_deserialize_new(buffer_t* buf, sign_data_ctx_t* ctx) {
 
             add_hint_number(&ctx->hints, "Schema hash", schema_crc);
 
-            uint8_t encoded_domain[MAX_APP_DATA_DOMAIN_LENGTH+1];
-            int encoded_len = encode_domain_buf(app_domain, app_domain_len, encoded_domain, sizeof(encoded_domain));
+            uint8_t encoded_domain[MAX_APP_DATA_DOMAIN_LENGTH + 1];
+            int encoded_len = encode_domain_buf(app_domain,
+                                                app_domain_len,
+                                                encoded_domain,
+                                                sizeof(encoded_domain));
             if (encoded_len < 0) {
                 return false;
             }

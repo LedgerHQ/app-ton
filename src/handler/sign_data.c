@@ -80,8 +80,8 @@ int handler_sign_data(buffer_t *cdata, bool first, bool more, bool new_format) {
     }
 
     if (crypto_derive_public_key(G_context.bip32_path,
-        G_context.bip32_path_len,
-        G_context.sign_data_info.raw_public_key) < 0) {
+                                 G_context.bip32_path_len,
+                                 G_context.sign_data_info.raw_public_key) < 0) {
         return io_send_sw(SW_BAD_STATE);
     }
 

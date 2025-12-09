@@ -266,7 +266,12 @@ class CellSignDataNewRequest(SignDataNewRequest):
             store_uint(self.schema_crc, 32).
             store_uint(self.timestamp, 64).
             store_address(expected_address).
-            store_ref(begin_cell().store_string_tail(encode_domain_bin(self.app_domain)).end_cell()).
+            store_ref(
+                begin_cell().
+                store_string_tail(
+                    encode_domain_bin(self.app_domain)
+                ).
+                end_cell()).
             store_ref(self.data).
             end_cell())
         return c.bytes_hash()

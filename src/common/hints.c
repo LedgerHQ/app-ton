@@ -67,7 +67,11 @@ void add_hint_amount(HintHolder_t* hints,
     hints->hints_count++;
 }
 
-void add_hint_address(HintHolder_t* hints, const char* title, address_t address, bool bounceable, bool display_testnet) {
+void add_hint_address(HintHolder_t* hints,
+                      const char* title,
+                      address_t address,
+                      bool bounceable,
+                      bool display_testnet) {
     // Configure
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryAddress;

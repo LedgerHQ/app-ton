@@ -131,7 +131,10 @@ int apdu_dispatcher(const command_t *cmd) {
             buf.size = cmd->lc;
             buf.offset = 0;
 
-            return handler_sign_data(&buf, (bool) (cmd->p2 & P2_FIRST), (bool) (cmd->p2 & P2_MORE), (bool) (cmd->p1 == P1_SIGN_DATA_NEW));
+            return handler_sign_data(&buf,
+                                     (bool) (cmd->p2 & P2_FIRST),
+                                     (bool) (cmd->p2 & P2_MORE),
+                                     (bool) (cmd->p1 == P1_SIGN_DATA_NEW));
         case GET_APP_SETTINGS:
             if (cmd->p1 != P1_NONE || cmd->p2 != P2_NONE) {
                 return io_send_sw(SW_WRONG_P1P2);

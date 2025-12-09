@@ -114,7 +114,7 @@ def test_sign_data_new(backend, navigator, test_name):
         PlaintextSignDataNewRequest("a" * 120, "test.ton"),
         BinarySignDataNewRequest(b"a" * 120, "test.ton"),
         CellSignDataNewRequest(Cell(), 0x12345678, "test.ton"),
-        PlaintextSignDataNewRequest("a" * 120, "test." * 24 + "te.ton"), # app domain length = 126
+        PlaintextSignDataNewRequest("a" * 120, "test." * 24 + "ab.ton"), # app domain length = 126
     ]
 
     for (i, request) in enumerate(requests):
