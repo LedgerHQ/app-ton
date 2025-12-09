@@ -153,7 +153,7 @@ static void test_max_refs(void **state) {
     assert_int_equal(out.max_depth, 26);
 }
 
-// Verify hash is written 
+// Verify hash is written
 static void test_hash_is_computed(void **state) {
     (void) state;
     BitString_t bits;
@@ -267,7 +267,6 @@ static void test_descriptor_calculation(void **state) {
     BitString_storeUint(&bits7, 0x7F, 7);
     assert_true(hash_Cell(&bits7, NULL, 0, &out7));
 
-
     // even though 1-bit and 7-bit have same d2, they have different data so different hash
     int hash1_eq_hash7 = (memcmp(out1.hash, out7.hash, 32) == 0);
 
@@ -275,19 +274,17 @@ static void test_descriptor_calculation(void **state) {
 }
 
 int main() {
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_depth_empty_cell),
-        cmocka_unit_test(test_depth_no_refs),
-        cmocka_unit_test(test_depth_one_ref),
-        cmocka_unit_test(test_depth_multiple_refs),
-        cmocka_unit_test(test_max_cell_size),
-        cmocka_unit_test(test_max_refs),
-        cmocka_unit_test(test_hash_is_computed),
-        cmocka_unit_test(test_determinism),
-        cmocka_unit_test(test_uniqueness),
-        cmocka_unit_test(test_large_depth_values),
-        cmocka_unit_test(test_descriptor_calculation)
-    };
+    const struct CMUnitTest tests[] = {cmocka_unit_test(test_depth_empty_cell),
+                                       cmocka_unit_test(test_depth_no_refs),
+                                       cmocka_unit_test(test_depth_one_ref),
+                                       cmocka_unit_test(test_depth_multiple_refs),
+                                       cmocka_unit_test(test_max_cell_size),
+                                       cmocka_unit_test(test_max_refs),
+                                       cmocka_unit_test(test_hash_is_computed),
+                                       cmocka_unit_test(test_determinism),
+                                       cmocka_unit_test(test_uniqueness),
+                                       cmocka_unit_test(test_large_depth_values),
+                                       cmocka_unit_test(test_descriptor_calculation)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -97,7 +97,7 @@ static void test_read_ref(void **state) {
     uint8_t *ref = NULL;
 
     assert_true(buffer_read_ref(&buf, &ref, 3));
-    assert_ptr_equal(ref, data);  
+    assert_ptr_equal(ref, data);
     assert_int_equal(ref[0], 0x01);
     assert_int_equal(ref[1], 0x02);
     assert_int_equal(ref[2], 0x03);
@@ -251,28 +251,26 @@ static void test_read_cell_ref_insufficient(void **state) {
 }
 
 int main() {
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_read_bool_valid),
-        cmocka_unit_test(test_read_bool_insufficient),
-        cmocka_unit_test(test_read_bool_invalid),
-        cmocka_unit_test(test_read_u48_be),
-        cmocka_unit_test(test_read_u48_le),
-        cmocka_unit_test(test_read_u48_insufficient),
-        cmocka_unit_test(test_remaining),
-        cmocka_unit_test(test_read_ref),
-        cmocka_unit_test(test_read_ref_insufficient),
-        cmocka_unit_test(test_read_buffer),
-        cmocka_unit_test(test_read_buffer_insufficient),
-        cmocka_unit_test(test_read_varuint_valid),
-        cmocka_unit_test(test_read_varuint_size_too_large),
-        cmocka_unit_test(test_read_varuint_out_too_small),
-        cmocka_unit_test(test_read_varuint_no_size_byte),
-        cmocka_unit_test(test_read_address),
-        cmocka_unit_test(test_read_address_insufficient),
-        cmocka_unit_test(test_read_address_partial),
-        cmocka_unit_test(test_read_cell_ref),
-        cmocka_unit_test(test_read_cell_ref_insufficient)
-    };
+    const struct CMUnitTest tests[] = {cmocka_unit_test(test_read_bool_valid),
+                                       cmocka_unit_test(test_read_bool_insufficient),
+                                       cmocka_unit_test(test_read_bool_invalid),
+                                       cmocka_unit_test(test_read_u48_be),
+                                       cmocka_unit_test(test_read_u48_le),
+                                       cmocka_unit_test(test_read_u48_insufficient),
+                                       cmocka_unit_test(test_remaining),
+                                       cmocka_unit_test(test_read_ref),
+                                       cmocka_unit_test(test_read_ref_insufficient),
+                                       cmocka_unit_test(test_read_buffer),
+                                       cmocka_unit_test(test_read_buffer_insufficient),
+                                       cmocka_unit_test(test_read_varuint_valid),
+                                       cmocka_unit_test(test_read_varuint_size_too_large),
+                                       cmocka_unit_test(test_read_varuint_out_too_small),
+                                       cmocka_unit_test(test_read_varuint_no_size_byte),
+                                       cmocka_unit_test(test_read_address),
+                                       cmocka_unit_test(test_read_address_insufficient),
+                                       cmocka_unit_test(test_read_address_partial),
+                                       cmocka_unit_test(test_read_cell_ref),
+                                       cmocka_unit_test(test_read_cell_ref_insufficient)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

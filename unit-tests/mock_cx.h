@@ -8,7 +8,7 @@
 typedef uint32_t cx_err_t;
 
 // Error codes
-#define CX_OK 0x00000000
+#define CX_OK             0x00000000
 #define CX_INTERNAL_ERROR 0xFFFFFF85
 
 // Hash flags

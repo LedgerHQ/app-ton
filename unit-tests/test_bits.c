@@ -215,8 +215,8 @@ static void test_storeUint_bits_greater_than_64(void **state) {
 
     // Test case: bits = 65, value = 0xFF
     // Should store 1 zero bit, then 64 bits of 0xFF
-    // Expected: 72 bits total = 1 zero bits followed by 64 bits of 0xFF, then finalize adds: 1 bit + 0s
-    // 0111 1111 | 1111 1111 | ... | 1111 1111 | 1100 0000
+    // Expected: 72 bits total = 1 zero bits followed by 64 bits of 0xFF, then finalize adds: 1 bit
+    // + 0s 0111 1111 | 1111 1111 | ... | 1111 1111 | 1100 0000
     uint8_t expected_65[9] = {0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0};
     BitString_init(&bits);
     BitString_storeUint(&bits, 0xFFFFFFFFFFFFFFFFULL, 65);
@@ -225,8 +225,8 @@ static void test_storeUint_bits_greater_than_64(void **state) {
     assert_memory_equal(bits.data, expected_65, sizeof(expected_65));
 
     // Test case: bits = 70, value = 0xFFFFFFFFFFFFFFFF
-    // Expected: 72 bits total = 6 zero bits followed by 64 bits of 0xFF, then finalize adds: 1 bit + 0s
-    // 0000 0011 | 1111 1111 | ... | 1111 1111 | 1111 1110
+    // Expected: 72 bits total = 6 zero bits followed by 64 bits of 0xFF, then finalize adds: 1 bit
+    // + 0s 0000 0011 | 1111 1111 | ... | 1111 1111 | 1111 1110
     uint8_t expected_70[9] = {0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE};
     BitString_init(&bits);
     BitString_storeUint(&bits, 0xFFFFFFFFFFFFFFFFULL, 70);
@@ -309,13 +309,12 @@ static void test_storeUint_various_cases(void **state) {
     assert_memory_equal(bits.data, expected_truncate, sizeof(expected_truncate));
 }
 
-
 static void test_storeBit_edge_cases(void **state) {
     BitString_t bits;
 
     BitString_init(&bits);
     for (int i = 0; i < 16; i++) {
-        BitString_storeBit(&bits, i % 2);  
+        BitString_storeBit(&bits, i % 2);
     }
 
     // 01010101 01010101 = 0x55 0x55
@@ -391,23 +390,23 @@ static void test_storeCoins_edge_cases(void **state) {
     BitString_init(&bits);
     BitString_storeCoins(&bits, 0xFFFFFFFFFFFFFFFFULL);
     assert_int_equal(bits.data_cursor, 68);
-    uint8_t expected_1val[9] = {0x8F, 0xFF, 0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xF0};
+    uint8_t expected_1val[9] = {0x8F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0};
     assert_memory_equal(bits.data, expected_1val, sizeof(expected_1val));
 
     BitString_init(&bits);
-    BitString_storeCoins(&bits, 256);  // 0x100, needs 2 bytes
+    BitString_storeCoins(&bits, 256);        // 0x100, needs 2 bytes
     assert_int_equal(bits.data_cursor, 20);  // 4 + 16
     uint8_t expected_2val[3] = {0x20, 0x10, 0x0};
     assert_memory_equal(bits.data, expected_2val, sizeof(expected_2val));
 
     BitString_init(&bits);
-    BitString_storeCoins(&bits, 65536);  // 0x10000, needs 3 bytes
+    BitString_storeCoins(&bits, 65536);      // 0x10000, needs 3 bytes
     assert_int_equal(bits.data_cursor, 28);  // 4 + 24
     uint8_t expected_3val[4] = {0x30, 0x10, 0x0, 0x0};
     assert_memory_equal(bits.data, expected_3val, sizeof(expected_3val));
 
     BitString_init(&bits);
-    BitString_storeCoins(&bits, 255);  // 0xFF, needs 1 byte
+    BitString_storeCoins(&bits, 255);        // 0xFF, needs 1 byte
     assert_int_equal(bits.data_cursor, 12);  // 4 + 8
     uint8_t expected_4val[2] = {0x1F, 0xF0};
     assert_memory_equal(bits.data, expected_4val, sizeof(expected_4val));
@@ -434,8 +433,8 @@ static void test_storeCoinsBuf_edge_cases(void **state) {
 
     // Test with max length (15 = 0xF, fits in 4 bits)
     BitString_init(&bits);
-    uint8_t max_buf[15] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                           0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+    uint8_t max_buf[15] =
+        {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
     BitString_storeCoinsBuf(&bits, max_buf, 15);
     // 4 bits (length) + 15*8 bits (data) = 124 bits
     assert_int_equal(bits.data_cursor, 124);
@@ -461,14 +460,14 @@ static void test_storeAddress_various_cases(void **state) {
     // Layout: 10 0 11111111 | 11111111... (32 bytes) | padding
     // Byte 0: 100 11111 = 0x9F
     // Bytes 1-32: all 0xFF
-    // Byte 33: 111 10000 = 0xF0 
+    // Byte 33: 111 10000 = 0xF0
     uint8_t expected1[34];
     expected1[0] = 0x9F;
     memset(&expected1[1], 0xFF, 32);
     expected1[33] = 0xF0;
     assert_memory_equal(bits.data, expected1, sizeof(expected1));
 
-    // Test case 2: chain=0x01, hash=0x00 
+    // Test case 2: chain=0x01, hash=0x00
     uint8_t hash3[32];
     memset(hash3, 0x00, 32);
     BitString_init(&bits);
