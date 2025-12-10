@@ -67,14 +67,13 @@ static void on_blind_choice1(bool back_to_safety) {
     if (back_to_safety) {
         on_data_rejected();
     } else {
-        nbgl_useCaseChoice(
-            NULL,
-            "Blind Signing",
-            "This data cannot be\nsecurely interpreted by Ledger. It might put "
-            "your assets\nat risk.",
-            "I accept the risk",
-            "Reject transaction",
-            on_blind_choice2);
+        nbgl_useCaseChoice(NULL,
+                           "Blind Signing",
+                           "This data cannot be\nsecurely interpreted by Ledger. It might put "
+                           "your assets\nat risk.",
+                           "I accept the risk",
+                           "Reject transaction",
+                           on_blind_choice2);
     }
 }
 
