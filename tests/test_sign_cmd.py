@@ -1,6 +1,6 @@
 import pytest
 
-from application_client.ton_transaction import Transaction, SendMode, CommentPayload, Payload, JettonTransferPayload, NFTTransferPayload, CustomUnsafePayload, JettonBurnPayload, AddWhitelistPayload, SingleNominatorWithdrawPayload, ChangeValidatorPayload, TonstakersDepositPayload, JettonDAOVotePayload, ChangeDNSWalletPayload, ChangeDNSPayload, TokenBridgePaySwapPayload, TonWhalesPoolDepositPayload, TonWhalesPoolWithdrawPayload, VestingSendMsgCommentPayload
+from application_client.ton_transaction import Transaction, SendMode, CommentPayload, Payload, JettonTransferPayload, NFTTransferPayload, CustomUnsafePayload, JettonBurnPayload, AddWhitelistPayload, SingleNominatorWithdrawPayload, ChangeValidatorPayload, TonstakersDepositPayload, JettonDAOVotePayload, ChangeDNSWalletPayload, ChangeDNSPayload, TokenBridgePaySwapPayload, TonWhalesPoolDepositPayload, TonWhalesPoolWithdrawPayload, VestingSendMsgCommentPayload, MultiTransaction, MultiTransactionMessage
 from application_client.ton_command_sender import BoilerplateCommandSender, Errors
 from application_client.ton_response_unpacker import unpack_sign_tx_response
 from ragger.error import ExceptionRAPDU
@@ -542,6 +542,151 @@ def test_sign_tx_jetton_high_query_id(backend, navigator, test_name):
                                                         screen_change_before_first_instruction=False)
 
     # The device as yielded the result, parse it and ensure that the signature is correct
+    response = client.get_async_response().data
+    sig, hash_b = unpack_sign_tx_response(response)
+    assert hash_b == tx.transfer_cell().bytes_hash()
+    assert check_signature_validity(pubkey, sig, hash_b)
+
+
+def test_sign_tx_multi(backend, navigator, test_name):
+    import os
+
+    # Use the app interface instead of raw interface
+    client = BoilerplateCommandSender(backend)
+    # The path used for this entire test
+    path: str = "m/44'/607'/0'/0'/0'/0'"
+
+    # First we need to get the public key of the device in order to build the transaction
+    pubkey = client.get_public_key(path=path).data
+
+    messages = [
+        MultiTransactionMessage(Address("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"), SendMode.PAY_GAS_SEPARATLY, True, 100000000, payload=CommentPayload("Hello, world!")),
+        MultiTransactionMessage(Address("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"), SendMode.PAY_GAS_SEPARATLY, True, 100000000, payload=JettonTransferPayload(100, Address("0:" + "0" * 64), forward_amount=1, query_id=((1 << 64) - 1))),
+    ]
+
+    tx = MultiTransaction(0, 1686176000, messages)
+
+    tx_bytes, msg_bytes = tx.to_request_bytes()
+
+    client.sign_tx_multi_tx(path=path, transaction=tx_bytes, n_messages=len(messages))
+
+    for i in range(len(messages)):
+        with client.sign_tx_multi_msg(message=msg_bytes[i], last=i == len(messages) - 1):
+            if backend.device.is_nano:
+                navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
+                                                            [NavInsID.BOTH_CLICK],
+                                                            "Approve",
+                                                            ROOT_SCREENSHOT_PATH,
+                                                            test_name + f"/part{i}")
+            else:
+                navigator.navigate([
+                                        NavInsID.SWIPE_CENTER_TO_LEFT,
+                                    ])
+                navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
+                                                            [NavInsID.USE_CASE_REVIEW_CONFIRM,
+                                                            NavInsID.USE_CASE_STATUS_DISMISS],
+                                                            "Hold to sign",
+                                                            ROOT_SCREENSHOT_PATH,
+                                                            test_name + f"/part{i}",
+                                                            screen_change_before_first_instruction=False)
+
+    # The device as yielded the result, parse it and ensure that the signature is correct
+    response = client.get_async_response().data
+    sig, hash_b = unpack_sign_tx_response(response)
+    assert hash_b == tx.transfer_cell().bytes_hash()
+    assert check_signature_validity(pubkey, sig, hash_b)
+
+
+def test_sign_tx_multi_single(backend, navigator, test_name):
+    import os
+
+    # Use the app interface instead of raw interface
+    client = BoilerplateCommandSender(backend)
+    # The path used for this entire test
+    path: str = "m/44'/607'/0'/0'/0'/0'"
+
+    # First we need to get the public key of the device in order to build the transaction
+    pubkey = client.get_public_key(path=path).data
+
+    messages = [
+        MultiTransactionMessage(Address("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"), SendMode.PAY_GAS_SEPARATLY, True, 100000000, payload=CommentPayload("Hello, world!")),
+    ]
+
+    tx = MultiTransaction(0, 1686176000, messages)
+
+    tx_bytes, msg_bytes = tx.to_request_bytes()
+
+    client.sign_tx_multi_tx(path=path, transaction=tx_bytes, n_messages=len(messages))
+
+    for i in range(len(messages)):
+        with client.sign_tx_multi_msg(message=msg_bytes[i], last=i == len(messages) - 1):
+            if backend.device.is_nano:
+                navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
+                                                            [NavInsID.BOTH_CLICK],
+                                                            "Approve",
+                                                            ROOT_SCREENSHOT_PATH,
+                                                            test_name + f"/part{i}")
+            else:
+                navigator.navigate([
+                                        NavInsID.SWIPE_CENTER_TO_LEFT,
+                                    ])
+                navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
+                                                            [NavInsID.USE_CASE_REVIEW_CONFIRM,
+                                                            NavInsID.USE_CASE_STATUS_DISMISS],
+                                                            "Hold to sign",
+                                                            ROOT_SCREENSHOT_PATH,
+                                                            test_name + f"/part{i}",
+                                                            screen_change_before_first_instruction=False)
+
+    # The device as yielded the result, parse it and ensure that the signature is correct
+    response = client.get_async_response().data
+    sig, hash_b = unpack_sign_tx_response(response)
+    assert hash_b == tx.transfer_cell().bytes_hash()
+    assert check_signature_validity(pubkey, sig, hash_b)
+
+
+def test_sign_tx_expected_public_key(backend, navigator, test_name):
+    client = BoilerplateCommandSender(backend)
+    path: str = "m/44'/607'/0'/0'/0'/0'"
+
+    pubkey = client.get_public_key(path=path).data
+
+    expected_public_key = bytes(reversed(pubkey))
+
+    tx = Transaction(Address("0:" + "0" * 64), SendMode.PAY_GAS_SEPARATLY, 0, 1686176000, True, 100000000, expected_public_key=expected_public_key)
+    tx_bytes = tx.to_request_bytes()
+
+    with pytest.raises(ExceptionRAPDU) as e:
+        with client.sign_tx(path=path, transaction=tx_bytes):
+            pass
+
+    assert e.value.status == Errors.SW_PUBLIC_KEY_MISMATCH
+    assert len(e.value.data) == 0
+
+    expected_public_key = pubkey
+
+    tx = Transaction(Address("0:" + "0" * 64), SendMode.PAY_GAS_SEPARATLY, 0, 1686176000, True, 100000000, expected_public_key=expected_public_key)
+    tx_bytes = tx.to_request_bytes()
+
+    with client.sign_tx(path=path, transaction=tx_bytes):
+        if backend.device.is_nano:
+            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
+                                                      [NavInsID.BOTH_CLICK],
+                                                      "Approve",
+                                                      ROOT_SCREENSHOT_PATH,
+                                                      test_name)
+        else:
+            navigator.navigate([
+                                   NavInsID.SWIPE_CENTER_TO_LEFT,
+                               ])
+            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_VIEW_DETAILS_NEXT,
+                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
+                                                       NavInsID.USE_CASE_STATUS_DISMISS],
+                                                      "Hold to sign",
+                                                      ROOT_SCREENSHOT_PATH,
+                                                      test_name,
+                                                      screen_change_before_first_instruction=False)
+
     response = client.get_async_response().data
     sig, hash_b = unpack_sign_tx_response(response)
     assert hash_b == tx.transfer_cell().bytes_hash()

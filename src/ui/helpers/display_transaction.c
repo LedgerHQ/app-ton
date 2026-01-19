@@ -28,13 +28,15 @@ bool display_transaction(char *g_operation,
     memset(g_operation, 0, g_operation_len);
     snprintf(g_operation, g_operation_len, "%s", G_context.tx_info.transaction.title);
 
+    message_t *msg = &G_context.tx_info.messages[G_context.tx_info.message_count - 1];
+
     // Amount
     memset(g_amount, 0, g_amount_len);
-    if ((G_context.tx_info.transaction.send_mode & 128) != 0) {
+    if ((msg->send_mode & 128) != 0) {
         snprintf(g_amount, g_amount_len, "ALL YOUR TONs");
     } else {
-        if (!amountToString(G_context.tx_info.transaction.value_buf,
-                            G_context.tx_info.transaction.value_len,
+        if (!amountToString(msg->value_buf,
+                            msg->value_len,
                             EXPONENT_SMALLEST_UNIT,
                             "TON",
                             g_amount,
@@ -46,9 +48,9 @@ bool display_transaction(char *g_operation,
 
     // Address
     uint8_t address[ADDRESS_LEN] = {0};
-    if (!address_to_friendly(G_context.tx_info.transaction.to.chain,
-                             G_context.tx_info.transaction.to.hash,
-                             G_context.tx_info.transaction.bounce,
+    if (!address_to_friendly(msg->to.chain,
+                             msg->to.hash,
+                             msg->bounce,
                              false,
                              address,
                              sizeof(address))) {
@@ -60,8 +62,8 @@ bool display_transaction(char *g_operation,
 
     // Payload
     memset(g_payload, 0, g_payload_len);
-    if (G_context.tx_info.transaction.has_payload) {
-        base64_encode(G_context.tx_info.transaction.payload.hash,
+    if (msg->has_payload) {
+        base64_encode(msg->payload.hash,
                       HASH_LEN,
                       g_payload,
                       g_payload_len);

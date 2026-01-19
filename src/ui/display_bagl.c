@@ -44,6 +44,7 @@
 #include "helpers/display_transaction.h"
 
 static action_validate_cb g_validate_callback;
+static char g_multi_tx_str[G_MULTI_TX_STR_LEN];
 static char g_operation[G_OPERATION_LEN];
 static char g_amount[G_AMOUNT_LEN];
 static char g_address[G_ADDRESS_LEN];
@@ -166,6 +167,13 @@ int ui_display_proof(uint8_t flags) {
 }
 
 // Step with icon and text
+UX_STEP_NOCB(ux_display_multi_tx_step,
+             pnn,
+             {
+                 &C_icon_eye,
+                 "Multi-transaction",
+                 g_multi_tx_str,
+             });
 UX_STEP_NOCB(ux_display_review_step,
              pnn,
              {
@@ -233,13 +241,17 @@ int ui_display_transaction() {
 
     // Configure Flow
     int step = 0;
+    if (G_context.tx_info.multi_tx && G_context.tx_info.message_count > 1) {
+        ux_approval_flow[step++] = &ux_display_multi_tx_step;
+        snprintf(g_multi_tx_str, sizeof(g_multi_tx_str), "(%d of %d)", G_context.tx_info.message_count, G_context.tx_info.expected_message_count);
+    }
     ux_approval_flow[step++] = &ux_display_review_step;
     if (G_context.tx_info.transaction.is_blind) {
         ux_approval_flow[step++] = &ux_display_blind_signing_warning_step;
     }
     ux_approval_flow[step++] = &ux_display_address_step;
     ux_approval_flow[step++] = &ux_display_amount_step;
-    if (G_context.tx_info.transaction.has_payload && G_context.tx_info.transaction.is_blind) {
+    if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload && G_context.tx_info.transaction.is_blind) {
         ux_approval_flow[step++] = &ux_display_payload_step;
     }
     g_hint_holder = &G_context.tx_info.transaction.hints;

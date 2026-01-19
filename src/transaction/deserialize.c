@@ -23,6 +23,8 @@
 #include "transaction_hints.h"
 #include "../constants.h"
 #include "../common/types.h"
+#include "../crypto.h"
+#include "../globals.h"
 
 #define SAFE(RES, CODE) \
     if (!RES) {         \
@@ -40,11 +42,27 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
         return TAG_PARSING_ERROR;
     }
 
-    tx->hints.hints_count = 0;
-
     if (tx->tag == 0x01) {
         SAFE(buffer_read_u32(buf, &tx->subwallet_id, BE), GENERAL_ERROR);
-        SAFE(buffer_read_bool(buf, &tx->include_wallet_op), GENERAL_ERROR);
+
+        uint8_t flags;
+        SAFE(buffer_read_u8(buf, &flags), GENERAL_ERROR);
+
+        tx->include_wallet_op = (flags & 0x01) != 0;
+
+        if (flags & 0x04) {
+            uint8_t expected_public_key[PUBKEY_LEN];
+            SAFE(buffer_read_buffer(buf, expected_public_key, PUBKEY_LEN), GENERAL_ERROR);
+
+            uint8_t actual_public_key[PUBKEY_LEN];
+            if (crypto_derive_public_key(G_context.bip32_path, G_context.bip32_path_len, actual_public_key) < 0) {
+                return GENERAL_ERROR;
+            }
+
+            if (memcmp(expected_public_key, actual_public_key, PUBKEY_LEN) != 0) {
+                return PUBLIC_KEY_MISMATCH_ERROR;
+            }
+        }
     } else {
         tx->subwallet_id = DEFAULT_SUBWALLET_ID;
         tx->include_wallet_op = true;
@@ -53,6 +71,17 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
     // Basic Transaction parameters
     SAFE(buffer_read_u32(buf, &tx->seqno, BE), SEQ_PARSING_ERROR);
     SAFE(buffer_read_u32(buf, &tx->timeout, BE), TIMEOUT_PARSING_ERROR);
+
+    return PARSING_OK;
+}
+
+parser_status_e message_deserialize(buffer_t *buf, transaction_t *full_tx, message_t *tx) {
+    if (buf->size > MAX_TRANSACTION_LEN) {
+        return WRONG_LENGTH_ERROR;
+    }
+
+    full_tx->hints.hints_count = 0;
+
     SAFE(buffer_read_varuint(buf, &tx->value_len, tx->value_buf, MAX_VALUE_BYTES_LEN),
          VALUE_PARSING_ERROR);
     SAFE(buffer_read_address(buf, &tx->to), TO_PARSING_ERROR);
@@ -72,21 +101,21 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
     }
 
     // Hints
-    SAFE(buffer_read_bool(buf, &tx->has_hints), HINTS_PARSING_ERROR);
-    if (tx->has_hints) {
+    SAFE(buffer_read_bool(buf, &full_tx->has_hints), HINTS_PARSING_ERROR);
+    if (full_tx->has_hints) {
         if (!tx->has_payload) {
             return HINTS_PARSING_ERROR;
         }
-        SAFE(buffer_read_u32(buf, &tx->hints_type, BE), HINTS_PARSING_ERROR);
-        SAFE(buffer_read_u16(buf, &tx->hints_len, BE), HINTS_PARSING_ERROR);
-        SAFE(buffer_read_ref(buf, &tx->hints_data, tx->hints_len), HINTS_PARSING_ERROR);
+        SAFE(buffer_read_u32(buf, &full_tx->hints_type, BE), HINTS_PARSING_ERROR);
+        SAFE(buffer_read_u16(buf, &full_tx->hints_len, BE), HINTS_PARSING_ERROR);
+        SAFE(buffer_read_ref(buf, &full_tx->hints_data, full_tx->hints_len), HINTS_PARSING_ERROR);
     }
 
     // Process hints
-    SAFE(process_hints(tx), HINTS_PARSING_ERROR);
+    SAFE(process_hints(full_tx, tx), HINTS_PARSING_ERROR);
 
-    if (tx->subwallet_id != DEFAULT_SUBWALLET_ID) {
-        add_hint_number(&tx->hints, "Subwallet ID", (uint64_t) tx->subwallet_id);
+    if (full_tx->subwallet_id != DEFAULT_SUBWALLET_ID) {
+        add_hint_number(&full_tx->hints, "Subwallet ID", (uint64_t) full_tx->subwallet_id);
     }
 
     return (buf->offset == buf->size) ? PARSING_OK : WRONG_LENGTH_ERROR;

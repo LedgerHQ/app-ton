@@ -98,3 +98,8 @@
 #define BOUNCEABLE     0x11
 #define NON_BOUNCEABLE 0x51
 #define TESTNET_ONLY   0x80
+
+/**
+ * Maximum number of messages in a transaction.
+ */
+#define MAX_MESSAGES 4

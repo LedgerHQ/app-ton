@@ -40,13 +40,17 @@ void ui_action_validate_pubkey(bool choice) {
 
 void ui_action_validate_transaction(bool choice) {
     if (choice) {
-        G_context.state = STATE_APPROVED;
+        if (G_context.tx_info.final_message) {
+            G_context.state = STATE_APPROVED;
 
-        if (crypto_sign_tx() < 0) {
-            G_context.state = STATE_NONE;
-            io_send_sw(SW_SIGNATURE_FAIL);
+            if (crypto_sign_tx() < 0) {
+                G_context.state = STATE_NONE;
+                io_send_sw(SW_SIGNATURE_FAIL);
+            } else {
+                helper_send_response_sig();
+            }
         } else {
-            helper_send_response_sig();
+            io_send_sw(SW_OK);
         }
     } else {
         G_context.state = STATE_NONE;
