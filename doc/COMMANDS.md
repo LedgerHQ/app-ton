@@ -118,13 +118,13 @@ Sent as series of packages. First one contains bip32 path, which must be at leas
 
 | CLA | INS | P1 | P2 | Lc | CData |
 | --- | --- | --- | --- | --- | --- |
-| 0xE0 | 0x09 | 0x00 | 0x03 (first & more) | 1 + 4n | `len(bip32_path) (1)` \|\|<br> `bip32_path{1} (4)` \|\|<br>`...` \|\|<br>`bip32_path{n} (4)` |
+| 0xE0 | 0x09 | 0x00 or 0x01 | 0x03 (first & more) | 1 + 4n | `len(bip32_path) (1)` \|\|<br> `bip32_path{1} (4)` \|\|<br>`...` \|\|<br>`bip32_path{n} (4)` |
 
-Then an arbitrary number of chunks with serialized custom data (see [CUSTOM_DATA.md](./CUSTOM_DATA.md)), up to a total of 510 bytes.
+Then an arbitrary number of chunks with serialized custom data (see [CUSTOM_DATA.md](./CUSTOM_DATA.md) for old format (P1 = 0x00), or [CUSTOM_DATA_NEW.md](./CUSTOM_DATA_NEW.md) for new format (P1 = 0x01)), up to a total of 510 bytes.
 
 | CLA | INS | P1 | P2 | Lc | CData |
 | --- | --- | --- | --- | --- | --- |
-| 0xE0 | 0x09 | 0x00 | 0x02 (more) <br> 0x00 (last) | `len(chunk)` | `chunk` |
+| 0xE0 | 0x09 | 0x00 or 0x01 | 0x02 (more) <br> 0x00 (last) | `len(chunk)` | `chunk` |
 
 ### Response
 

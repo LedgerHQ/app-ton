@@ -144,18 +144,29 @@ int crypto_sign_proof() {
 }
 
 int crypto_sign_sign_data() {
-    uint8_t data[4 + 8 + HASH_LEN] = {0};
-    write_u32_be(data, 0, G_context.sign_data_info.schema_crc);
-    write_u64_be(data, 4, G_context.sign_data_info.timestamp);
-    memmove(&data[4 + 8], G_context.sign_data_info.cell_hash, HASH_LEN);
+    if (G_context.sign_data_info.new_format) {
+        if (crypto_sign(G_context.bip32_path,
+                        G_context.bip32_path_len,
+                        G_context.sign_data_info.cell_hash,
+                        sizeof(G_context.sign_data_info.cell_hash),
+                        G_context.sign_data_info.signature,
+                        sizeof(G_context.sign_data_info.signature)) < 0) {
+            return -1;
+        }
+    } else {
+        uint8_t data[4 + 8 + HASH_LEN] = {0};
+        write_u32_be(data, 0, G_context.sign_data_info.schema_crc);
+        write_u64_be(data, 4, G_context.sign_data_info.timestamp);
+        memmove(&data[4 + 8], G_context.sign_data_info.cell_hash, HASH_LEN);
 
-    if (crypto_sign(G_context.bip32_path,
-                    G_context.bip32_path_len,
-                    data,
-                    sizeof(data),
-                    G_context.sign_data_info.signature,
-                    sizeof(G_context.sign_data_info.signature)) < 0) {
-        return -1;
+        if (crypto_sign(G_context.bip32_path,
+                        G_context.bip32_path_len,
+                        data,
+                        sizeof(data),
+                        G_context.sign_data_info.signature,
+                        sizeof(G_context.sign_data_info.signature)) < 0) {
+            return -1;
+        }
     }
 
     return 0;

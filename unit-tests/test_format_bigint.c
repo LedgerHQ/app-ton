@@ -14,7 +14,7 @@ void test_with_ticker(void **state) {
 
     char output[16] = {0};
 
-    assert_true(amountToString(input, sizeof(input), 0, "TON", output, sizeof(output)));
+    assert_true(amountToString(input, sizeof(input), 0, "TON", output, sizeof(output)) > 0);
 
     static const char expected[] = "TON 256";
 
@@ -26,7 +26,7 @@ void test_no_ticker(void **state) {
 
     char output[16] = {0};
 
-    assert_true(amountToString(input, sizeof(input), 9, "", output, sizeof(output)));
+    assert_true(amountToString(input, sizeof(input), 9, "", output, sizeof(output)) > 0);
 
     static const char expected[] = "0.1";
 
@@ -38,7 +38,7 @@ void test_zero(void **state) {
 
     char output[2] = {0};
 
-    assert_true(amountToString(input, sizeof(input), 9, "", output, sizeof(output)));
+    assert_true(amountToString(input, sizeof(input), 9, "", output, sizeof(output)) > 0);
 
     static const char expected[] = "0";
 

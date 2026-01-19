@@ -16,6 +16,16 @@
 #define P1_NON_CONFIRM 0x00
 
 /**
+ * P1 indicating a request to sign data in the old format.
+ */
+#define P1_SIGN_DATA_OLD 0x00
+
+/**
+ * P1 indicating a request to sign data in the new format.
+ */
+#define P1_SIGN_DATA_NEW 0x01
+
+/**
  * P2 indicating no information.
  */
 #define P2_NONE 0x00
