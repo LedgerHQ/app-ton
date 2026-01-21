@@ -9,6 +9,7 @@ from tonsdk.contract.wallet import WalletV4ContractR2, WalletV3ContractR2
 
 TON_PROOF_PREFIX   = b"ton-proof-item-v2/"
 TON_CONNECT_PREFIX = b"\xff\xffton-connect"
+TON_SIGN_DATA_PREFIX = b"\xff\xffton-connect/sign-data/"
 
 
 def write_varuint(n: int) -> bytes:
@@ -20,6 +21,13 @@ def write_varuint(n: int) -> bytes:
 def write_address(addr: Address) -> bytes:
     return b"".join([
         bytes([0xff if addr.wc == -1 else 0]),
+        bytes(addr.hash_part)
+    ])
+
+
+def write_address_long(addr: Address) -> bytes:
+    return b"".join([
+        addr.wc.to_bytes(4, byteorder="big"),
         bytes(addr.hash_part)
     ])
 

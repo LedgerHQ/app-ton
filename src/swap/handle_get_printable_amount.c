@@ -34,12 +34,12 @@ void swap_handle_get_printable_amount(get_printable_amount_parameters_t* params)
         }
     }
 
-    if (!amountToString(params->amount,
-                        params->amount_length,
-                        decimals,
-                        ticker,
-                        params->printable_amount,
-                        sizeof(params->printable_amount))) {
+    if (amountToString(params->amount,
+                       params->amount_length,
+                       decimals,
+                       ticker,
+                       params->printable_amount,
+                       sizeof(params->printable_amount)) <= 0) {
         PRINTF("print_amount failed\n");
         goto error;
     }

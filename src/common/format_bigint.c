@@ -93,16 +93,16 @@ static bool adjustDecimals(const char *src,
     return true;
 }
 
-bool amountToString(const uint8_t *amount,
-                    uint8_t amount_size,
-                    uint8_t decimals,
-                    const char *ticker,
-                    char *out_buffer,
-                    size_t out_buffer_size) {
+int amountToString(const uint8_t *amount,
+                   uint8_t amount_size,
+                   uint8_t decimals,
+                   const char *ticker,
+                   char *out_buffer,
+                   size_t out_buffer_size) {
     char tmp_buffer[100] = {0};
 
-    if (uint256_to_decimal(amount, amount_size, tmp_buffer, sizeof(tmp_buffer)) == false) {
-        return false;
+    if (!uint256_to_decimal(amount, amount_size, tmp_buffer, sizeof(tmp_buffer))) {
+        return -1;
     }
 
     uint8_t amount_len = strnlen(tmp_buffer, sizeof(tmp_buffer));
@@ -113,15 +113,15 @@ bool amountToString(const uint8_t *amount,
         out_buffer[ticker_len++] = ' ';
     }
 
-    if (adjustDecimals(tmp_buffer,
-                       amount_len,
-                       out_buffer + ticker_len,
-                       out_buffer_size - ticker_len,
-                       decimals) == false) {
-        return false;
+    if (!adjustDecimals(tmp_buffer,
+                        amount_len,
+                        out_buffer + ticker_len,
+                        out_buffer_size - ticker_len,
+                        decimals)) {
+        return -1;
     }
 
     out_buffer[out_buffer_size - 1] = '\0';
 
-    return true;
+    return amount_len;
 }
