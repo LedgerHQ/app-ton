@@ -22,6 +22,7 @@
 #include "menu.h"
 #include "helpers/display_transaction.h"
 #include "hint_buffers_nbgl.h"
+#include "../transaction/transaction_hints.h"
 
 static char g_operation[G_OPERATION_LEN];
 static char g_amount[G_AMOUNT_LEN];
@@ -85,13 +86,21 @@ static void ui_start_review() {
     pairs[pairIndex].value = g_operation;
     pairIndex++;
 
-    pairs[pairIndex].item = "Amount";
-    pairs[pairIndex].value = g_amount;
-    pairIndex++;
+    bool is_known_jetton = G_context.tx_info.transaction.is_known_jetton;
 
-    pairs[pairIndex].item = g_address_title;
-    pairs[pairIndex].value = g_address;
-    pairIndex++;
+    // value_decimal_len == 10 means the value is at least 1 TON
+    if (N_storage.expert_mode || !is_known_jetton ||
+        G_context.tx_info.transaction.value_decimal_len >= 10) {
+        pairs[pairIndex].item = "Amount";
+        pairs[pairIndex].value = g_amount;
+        pairIndex++;
+    }
+
+    if (N_storage.expert_mode || !is_known_jetton) {
+        pairs[pairIndex].item = g_address_title;
+        pairs[pairIndex].value = g_address;
+        pairIndex++;
+    }
 
     if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload && G_context.tx_info.transaction.is_blind) {
         pairs[pairIndex].item = "Payload";

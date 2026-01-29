@@ -54,4 +54,6 @@ typedef struct {
     char title[32];
     char action[32];
     char recipient[32];
+    bool is_known_jetton;
+    int value_decimal_len;
 } transaction_t;

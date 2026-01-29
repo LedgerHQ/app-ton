@@ -90,6 +90,15 @@ typedef struct {
     uint8_t cell_hash[HASH_LEN];
     uint8_t signature[SIG_LEN];
     HintHolder_t hints;
+    bool new_format;
+    uint8_t type_id;
+    uint8_t raw_public_key[PUBKEY_LEN];
+    int32_t workchain;
+    uint32_t subwallet_id;
+    bool is_v3r2;
+    uint8_t address_hash[HASH_LEN];
+    uint8_t data_hash[HASH_LEN];
+    bool is_blind;
 } sign_data_ctx_t;
 
 /**

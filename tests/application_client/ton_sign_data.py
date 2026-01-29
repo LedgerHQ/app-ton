@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from hashlib import sha256
 from time import time
 from typing import Optional
 
@@ -6,7 +7,8 @@ from tonsdk.boc import Cell
 from tonsdk.utils import Address
 
 from .my_builder import begin_cell
-from .ton_utils import write_address, write_cell
+from .ton_utils import write_address, write_cell, write_address_long, TON_SIGN_DATA_PREFIX
+from .ton_command_sender import AddressDisplayFlags
 
 
 class SignDataRequest(ABC):
@@ -58,6 +60,15 @@ class PlaintextSignDataRequest(SignDataRequest):
     def to_cell(self) -> Cell:
         bs = bytes(self.text, "utf8")
         return begin_cell().store_string_tail(bs).end_cell()
+
+
+def encode_domain_bin(d: str) -> bytes:
+    parts = reversed(d.split("."))
+    bs = bytes()
+    for p in parts:
+        bs += bytes(p, "utf8")
+        bs += b"\x00"
+    return bs
 
 
 def encode_domain(d: str) -> Cell:
@@ -117,3 +128,150 @@ class AppDataSignDataRequest(SignDataRequest):
                 write_cell(self.ext)
             ]) if self.ext is not None else bytes([0]))
         ])
+
+
+class SignDataNewRequest(ABC):
+    def __init__(self,
+        app_domain: str,
+        address_flags: AddressDisplayFlags = AddressDisplayFlags.NONE,
+        is_v3r2: bool = False,
+        subwallet_id: int = 698983191,
+        timestamp=int(time()),
+    ):
+        self.specifiers: bytes = bytes()
+        self.address_flags: AddressDisplayFlags = address_flags
+        if is_v3r2 or subwallet_id != 698983191:
+            self.address_flags |= 4
+            self.specifiers = b"".join([
+                bytes([1 if is_v3r2 else 0]),
+                subwallet_id.to_bytes(4, byteorder="big"),
+            ])
+        self.app_domain: str = app_domain
+        self.timestamp: int = timestamp
+
+    def common_part(self) -> bytes:
+        return b"".join([
+            bytes([self.type_id()]),
+            bytes([self.address_flags]),
+            self.specifiers,
+            bytes([len(self.app_domain)]),
+            bytes(self.app_domain, "utf8"),
+            self.timestamp.to_bytes(8, byteorder="big"),
+        ])
+
+    @abstractmethod
+    def payload_bytes(self) -> bytes:
+        return bytes()
+
+    def to_request_bytes(self) -> bytes:
+        return b"".join([
+            self.common_part(),
+            self.payload_bytes(),
+        ])
+
+    @abstractmethod
+    def to_signed_data(self, expected_address: Address) -> bytes:
+        return bytes()
+
+    @abstractmethod
+    def type_id(self) -> int:
+        return 0
+
+
+class PlaintextSignDataNewRequest(SignDataNewRequest):
+    def __init__(self,
+        text: str,
+        app_domain: str,
+        address_flags: AddressDisplayFlags = AddressDisplayFlags.NONE,
+        is_v3r2: bool = False,
+        subwallet_id: int = 698983191,
+        timestamp=int(time())):
+        super().__init__(app_domain, address_flags, is_v3r2, subwallet_id, timestamp)
+        self.text: str = text
+
+    def type_id(self) -> int:
+        return 0x00
+
+    def payload_bytes(self) -> bytes:
+        return bytes(self.text, "utf8")
+
+    def to_signed_data(self, expected_address: Address) -> bytes:
+        return sha256(b"".join([
+            TON_SIGN_DATA_PREFIX,
+            write_address_long(expected_address),
+            len(self.app_domain).to_bytes(4, byteorder="big"),
+            bytes(self.app_domain, "utf8"),
+            self.timestamp.to_bytes(8, byteorder="big"),
+            b"txt",
+            len(self.text).to_bytes(4, byteorder="big"),
+            bytes(self.text, "utf8"),
+        ])).digest()
+
+
+class BinarySignDataNewRequest(SignDataNewRequest):
+    def __init__(self,
+        data: bytes,
+        app_domain: str,
+        address_flags: AddressDisplayFlags = AddressDisplayFlags.NONE,
+        is_v3r2: bool = False,
+        subwallet_id: int = 698983191,
+        timestamp=int(time())):
+        super().__init__(app_domain, address_flags, is_v3r2, subwallet_id, timestamp)
+        self.data: bytes = data
+
+    def type_id(self) -> int:
+        return 0x01
+
+    def payload_bytes(self) -> bytes:
+        return self.data
+
+    def to_signed_data(self, expected_address: Address) -> bytes:
+        return sha256(b"".join([
+            TON_SIGN_DATA_PREFIX,
+            write_address_long(expected_address),
+            len(self.app_domain).to_bytes(4, byteorder="big"),
+            bytes(self.app_domain, "utf8"),
+            self.timestamp.to_bytes(8, byteorder="big"),
+            b"bin",
+            len(self.data).to_bytes(4, byteorder="big"),
+            self.data,
+        ])).digest()
+
+
+class CellSignDataNewRequest(SignDataNewRequest):
+    def __init__(self,
+        data: Cell,
+        schema_crc: int,
+        app_domain: str,
+        address_flags: AddressDisplayFlags = AddressDisplayFlags.NONE,
+        is_v3r2: bool = False,
+        subwallet_id: int = 698983191,
+        timestamp=int(time())):
+        super().__init__(app_domain, address_flags, is_v3r2, subwallet_id, timestamp)
+        self.data: Cell = data
+        self.schema_crc: int = schema_crc
+
+    def type_id(self) -> int:
+        return 0x02
+
+    def payload_bytes(self) -> bytes:
+        return b"".join([
+            self.schema_crc.to_bytes(4, byteorder="big"),
+            write_cell(self.data),
+        ])
+
+    def to_signed_data(self, expected_address: Address) -> bytes:
+        c = (begin_cell().
+            store_uint(0x75569022, 32).
+            store_uint(self.schema_crc, 32).
+            store_uint(self.timestamp, 64).
+            store_address(expected_address).
+            store_ref(
+                begin_cell().
+                store_string_tail(
+                    encode_domain_bin(self.app_domain)
+                ).
+                end_cell()).
+            store_ref(self.data).
+            end_cell())
+        return c.bytes_hash()

@@ -14,7 +14,7 @@
         return false;     \
     }
 
-bool hash_Cell(BitString_t *bits, CellRef_t *refs, uint8_t refs_count, CellRef_t *out) {
+bool hash_Cell(BitString_t *bits, const CellRef_t *refs, uint8_t refs_count, CellRef_t *out) {
     cx_sha256_t state;
     SAFE(cx_sha256_init_no_throw(&state));
 

@@ -23,6 +23,9 @@ class P1(IntEnum):
     P1_FIRST = 0x01
     P1_MORE = 0x02
 
+    P1_SIGN_DATA_OLD = 0x00
+    P1_SIGN_DATA_NEW = 0x01
+
 class P2(IntFlag):
     P2_NONE = 0x00
 
@@ -234,10 +237,20 @@ class BoilerplateCommandSender:
                                     data=chunk)
 
     @contextmanager
-    def sign_data(self, path: str, data: bytes) -> Generator[None, None, None]:
+    def sign_data(
+        self,
+        path: str,
+        data: bytes,
+        new_format: bool = False,
+    ) -> Generator[None, None, None]:
+        if new_format:
+            p1 = P1.P1_SIGN_DATA_NEW
+        else:
+            p1 = P1.P1_SIGN_DATA_OLD
+
         self.backend.exchange(cla=CLA,
                               ins=InsType.SIGN_DATA,
-                              p1=P1.P1_NONE,
+                              p1=p1,
                               p2=(P2.P2_FIRST | P2.P2_MORE),
                               data=pack_derivation_path(path))
         messages = split_message(data, MAX_APDU_LEN)
@@ -245,13 +258,13 @@ class BoilerplateCommandSender:
         for msg in messages[:-1]:
             self.backend.exchange(cla=CLA,
                                   ins=InsType.SIGN_DATA,
-                                  p1=P1.P1_NONE,
+                                  p1=p1,
                                   p2=P2.P2_MORE,
                                   data=msg)
 
         with self.backend.exchange_async(cla=CLA,
                                          ins=InsType.SIGN_DATA,
-                                         p1=P1.P1_NONE,
+                                         p1=p1,
                                          p2=P2.P2_NONE,
                                          data=messages[-1]) as response:
             yield response

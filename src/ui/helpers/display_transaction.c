@@ -34,16 +34,19 @@ bool display_transaction(char *g_operation,
     memset(g_amount, 0, g_amount_len);
     if ((msg->send_mode & 128) != 0) {
         snprintf(g_amount, g_amount_len, "ALL YOUR TONs");
+        G_context.tx_info.transaction.value_decimal_len = INT32_MAX;
     } else {
-        if (!amountToString(msg->value_buf,
-                            msg->value_len,
-                            EXPONENT_SMALLEST_UNIT,
-                            "TON",
-                            g_amount,
-                            g_amount_len)) {
+        int value_decimal_len = amountToString(msg->value_buf,
+                                               msg->value_len,
+                                               EXPONENT_SMALLEST_UNIT,
+                                               "TON",
+                                               g_amount,
+                                               g_amount_len);
+        if (value_decimal_len <= 0) {
             io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
             return false;
         }
+        G_context.tx_info.transaction.value_decimal_len = value_decimal_len;
     }
 
     // Address

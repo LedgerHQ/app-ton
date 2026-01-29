@@ -67,12 +67,17 @@ void add_hint_amount(HintHolder_t* hints,
     hints->hints_count++;
 }
 
-void add_hint_address(HintHolder_t* hints, const char* title, address_t address, bool bounceable) {
+void add_hint_address(HintHolder_t* hints,
+                      const char* title,
+                      address_t address,
+                      bool bounceable,
+                      bool display_testnet) {
     // Configure
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryAddress;
     hints->hints[hints->hints_count].address.address = address;
     hints->hints[hints->hints_count].address.bounceable = bounceable;
+    hints->hints[hints->hints_count].address.display_testnet = display_testnet;
 
     // Next
     hints->hints_count++;
@@ -164,7 +169,7 @@ void print_hint(HintHolder_t* hints,
     } else if (hint.kind == SummaryBool) {
         snprintf(body, body_len, hint.bool_value ? "Yes" : "No");
     } else if (hint.kind == SummaryHex) {
-        if (body_len >= 3 + 2 * hint.hex.len) {
+        if (body_len >= 3 + 2 * (size_t) hint.hex.len) {
             body[0] = '0';
             body[1] = 'x';
             format_hex(hint.hex.data, hint.hex.len, &body[2], body_len - 2);
