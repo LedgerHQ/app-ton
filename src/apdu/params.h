@@ -42,7 +42,7 @@
 
 /**
  * P1 indicating first APDU in a large request.
-  */
+ */
 #define P1_FIRST 0x01
 
 /**
@@ -54,7 +54,7 @@
  * P1 indicating multi-transaction request.
  */
 #define P1_MULTI_TX 0x04
- 
+
 /**
  * P2 bit indicating that address should be displayed as testnet only.
  */

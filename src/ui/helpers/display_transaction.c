@@ -66,10 +66,7 @@ bool display_transaction(char *g_operation,
     // Payload
     memset(g_payload, 0, g_payload_len);
     if (msg->has_payload) {
-        base64_encode(msg->payload.hash,
-                      HASH_LEN,
-                      g_payload,
-                      g_payload_len);
+        base64_encode(msg->payload.hash, HASH_LEN, g_payload, g_payload_len);
     } else {
         snprintf(g_payload, g_payload_len, "Nothing");
     }

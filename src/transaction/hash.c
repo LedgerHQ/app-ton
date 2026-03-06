@@ -13,13 +13,13 @@ bool serialize_message(message_t *msg, CellRef_t *ref) {
     BitString_t bits;
 
     BitString_init(&bits);
-    BitString_storeBit(&bits, 0);                                // tag
-    BitString_storeBit(&bits, 1);                                // ihr_disabled
-    BitString_storeBit(&bits, msg->bounce ? 1 : 0);  // bounce
-    BitString_storeBit(&bits, 0);                                // bounced
-    BitString_storeAddressNull(&bits);                           // from
-    BitString_storeAddress(&bits, msg->to.chain, msg->to.hash);  // to
-    BitString_storeCoinsBuf(&bits, msg->value_buf, msg->value_len); // amount
+    BitString_storeBit(&bits, 0);                                    // tag
+    BitString_storeBit(&bits, 1);                                    // ihr_disabled
+    BitString_storeBit(&bits, msg->bounce ? 1 : 0);                  // bounce
+    BitString_storeBit(&bits, 0);                                    // bounced
+    BitString_storeAddressNull(&bits);                               // from
+    BitString_storeAddress(&bits, msg->to.chain, msg->to.hash);      // to
+    BitString_storeCoinsBuf(&bits, msg->value_buf, msg->value_len);  // amount
     BitString_storeBit(&bits, 0);       // Currency collection (not supported)
     BitString_storeCoins(&bits, 0);     // ihr_fees
     BitString_storeCoins(&bits, 0);     // fwd_fees

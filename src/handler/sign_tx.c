@@ -37,7 +37,12 @@
 #include "../transaction/hash.h"
 #include "handle_swap_sign_transaction.h"
 
-int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool first_tx, bool more_tx) {
+int handler_sign_tx(buffer_t *cdata,
+                    bool first,
+                    bool more,
+                    bool multi_tx,
+                    bool first_tx,
+                    bool more_tx) {
     if (first) {  // first APDU, parse BIP32 path
         explicit_bzero(&G_context, sizeof(G_context));
 
@@ -101,8 +106,8 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool 
     }
 
     buffer_t buf = {.ptr = G_context.tx_info.raw_tx,
-        .size = G_context.tx_info.raw_tx_len,
-        .offset = 0};
+                    .size = G_context.tx_info.raw_tx_len,
+                    .offset = 0};
 
     if (multi_tx && !G_context.tx_info.have_tx_params) {
         if (first_tx || more_tx) {
@@ -113,14 +118,16 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool 
             return io_send_sw(SW_WRONG_DATA_LENGTH);
         }
 
-        if (G_context.tx_info.expected_message_count < 1 && G_context.tx_info.expected_message_count > MAX_MESSAGES) {
+        if (G_context.tx_info.expected_message_count < 1 &&
+            G_context.tx_info.expected_message_count > MAX_MESSAGES) {
             return io_send_sw(SW_BAD_STATE);
         }
 
         parser_status_e status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
         PRINTF("Parsing status: %d.\n", status);
         if (status != PARSING_OK) {
-            return io_send_sw(status == PUBLIC_KEY_MISMATCH_ERROR ? SW_PUBLIC_KEY_MISMATCH : SW_TX_PARSING_FAIL);
+            return io_send_sw(status == PUBLIC_KEY_MISMATCH_ERROR ? SW_PUBLIC_KEY_MISMATCH
+                                                                  : SW_TX_PARSING_FAIL);
         }
 
         G_context.tx_info.have_tx_params = true;
@@ -145,11 +152,15 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool 
         parser_status_e status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
         PRINTF("Parsing status: %d.\n", status);
         if (status != PARSING_OK) {
-            return io_send_sw(status == PUBLIC_KEY_MISMATCH_ERROR ? SW_PUBLIC_KEY_MISMATCH : SW_TX_PARSING_FAIL);
+            return io_send_sw(status == PUBLIC_KEY_MISMATCH_ERROR ? SW_PUBLIC_KEY_MISMATCH
+                                                                  : SW_TX_PARSING_FAIL);
         }
     }
 
-    parser_status_e status = message_deserialize(&buf, &G_context.tx_info.transaction, &G_context.tx_info.messages[G_context.tx_info.message_count - 1]);
+    parser_status_e status =
+        message_deserialize(&buf,
+                            &G_context.tx_info.transaction,
+                            &G_context.tx_info.messages[G_context.tx_info.message_count - 1]);
     PRINTF("Parsing status: %d.\n", status);
     if (status != PARSING_OK) {
         return io_send_sw(SW_TX_PARSING_FAIL);
@@ -161,7 +172,8 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool 
     }
 
     if (!more) {
-        if (multi_tx && G_context.tx_info.message_count != G_context.tx_info.expected_message_count) {
+        if (multi_tx &&
+            G_context.tx_info.message_count != G_context.tx_info.expected_message_count) {
             return io_send_sw(SW_BAD_STATE);
         }
 

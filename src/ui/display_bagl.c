@@ -244,7 +244,11 @@ int ui_display_transaction() {
     int step = 0;
     if (G_context.tx_info.multi_tx && G_context.tx_info.message_count > 1) {
         ux_approval_flow[step++] = &ux_display_multi_tx_step;
-        snprintf(g_multi_tx_str, sizeof(g_multi_tx_str), "(%d of %d)", G_context.tx_info.message_count, G_context.tx_info.expected_message_count);
+        snprintf(g_multi_tx_str,
+                 sizeof(g_multi_tx_str),
+                 "(%d of %d)",
+                 G_context.tx_info.message_count,
+                 G_context.tx_info.expected_message_count);
     }
     ux_approval_flow[step++] = &ux_display_review_step;
     if (G_context.tx_info.transaction.is_blind) {
@@ -263,7 +267,8 @@ int ui_display_transaction() {
         ux_approval_flow[step++] = &ux_display_amount_step;
     }
 
-    if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload && G_context.tx_info.transaction.is_blind) {
+    if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload &&
+        G_context.tx_info.transaction.is_blind) {
         ux_approval_flow[step++] = &ux_display_payload_step;
     }
 

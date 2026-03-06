@@ -102,7 +102,8 @@ static void ui_start_review() {
         pairIndex++;
     }
 
-    if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload && G_context.tx_info.transaction.is_blind) {
+    if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload &&
+        G_context.tx_info.transaction.is_blind) {
         pairs[pairIndex].item = "Payload";
         pairs[pairIndex].value = g_payload;
         pairIndex++;
@@ -121,7 +122,11 @@ static void ui_start_review() {
 
     bool multi_tx_str = G_context.tx_info.multi_tx && G_context.tx_info.message_count > 1;
     if (multi_tx_str) {
-        snprintf(g_multi_tx_str, sizeof(g_multi_tx_str), "Multi-transaction (%d of %d)", G_context.tx_info.message_count, G_context.tx_info.expected_message_count);
+        snprintf(g_multi_tx_str,
+                 sizeof(g_multi_tx_str),
+                 "Multi-transaction (%d of %d)",
+                 G_context.tx_info.message_count,
+                 G_context.tx_info.expected_message_count);
     }
 
     nbgl_useCaseReview(op,

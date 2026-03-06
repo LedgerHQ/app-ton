@@ -54,7 +54,9 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
             SAFE(buffer_read_buffer(buf, expected_public_key, PUBKEY_LEN), GENERAL_ERROR);
 
             uint8_t actual_public_key[PUBKEY_LEN];
-            if (crypto_derive_public_key(G_context.bip32_path, G_context.bip32_path_len, actual_public_key) < 0) {
+            if (crypto_derive_public_key(G_context.bip32_path,
+                                         G_context.bip32_path_len,
+                                         actual_public_key) < 0) {
                 return GENERAL_ERROR;
             }
 

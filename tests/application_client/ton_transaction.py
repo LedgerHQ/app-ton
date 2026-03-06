@@ -724,7 +724,9 @@ class Transaction:
         self.expected_public_key: Optional[bytes] = expected_public_key
 
     def header_bytes(self) -> bytes:
-        if not self.include_wallet_op or self.subwallet_id is not None or self.expected_public_key is not None:
+        if (not self.include_wallet_op
+                or self.subwallet_id is not None
+                or self.expected_public_key is not None):
             flags = 0
             if self.include_wallet_op:
                 flags |= 0x01

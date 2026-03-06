@@ -59,8 +59,8 @@ typedef struct {
     uint8_t expected_message_count;
     uint8_t message_count;
     message_t messages[MAX_MESSAGES];
-    uint8_t m_hash[HASH_LEN];             /// message hash digest
-    uint8_t signature[SIG_LEN];           /// transaction signature
+    uint8_t m_hash[HASH_LEN];    /// message hash digest
+    uint8_t signature[SIG_LEN];  /// transaction signature
     bool multi_tx;
     bool have_tx_params;
     bool message_active;

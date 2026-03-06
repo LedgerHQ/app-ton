@@ -18,4 +18,9 @@
  * @return zero or positive integer if success, negative integer otherwise.
  *
  */
-int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool first_tx, bool more_tx);
+int handler_sign_tx(buffer_t *cdata,
+                    bool first,
+                    bool more,
+                    bool multi_tx,
+                    bool first_tx,
+                    bool more_tx);

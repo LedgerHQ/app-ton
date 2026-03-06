@@ -215,8 +215,7 @@ class BoilerplateCommandSender:
     @contextmanager
     def sign_tx_multi_msg(self, message: bytes, last: bool) -> Generator[None, None, None]:
         chunks = split_message(message, MAX_APDU_LEN)
-        for j in range(len(chunks)):
-            chunk = chunks[j]
+        for j, chunk in enumerate(chunks):
             p1 = P1.P1_MULTI_TX
             if j == 0:
                 p1 |= P1.P1_FIRST
