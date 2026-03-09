@@ -22,8 +22,10 @@
 #include "transaction_hints.h"
 #include "../constants.h"
 #include "../common/types.h"
+#ifndef FUZZ
 #include "../crypto.h"
 #include "../globals.h"
+#endif
 
 #define SAFE(RES, CODE) \
     if (!RES) {         \
@@ -53,6 +55,7 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
             uint8_t expected_public_key[PUBKEY_LEN];
             SAFE(buffer_read_buffer(buf, expected_public_key, PUBKEY_LEN), GENERAL_ERROR);
 
+#ifndef FUZZ
             uint8_t actual_public_key[PUBKEY_LEN];
             if (crypto_derive_public_key(G_context.bip32_path,
                                          G_context.bip32_path_len,
@@ -63,6 +66,7 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
             if (memcmp(expected_public_key, actual_public_key, PUBKEY_LEN) != 0) {
                 return PUBLIC_KEY_MISMATCH_ERROR;
             }
+#endif
         }
     } else {
         tx->subwallet_id = DEFAULT_SUBWALLET_ID;
