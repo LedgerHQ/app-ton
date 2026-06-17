@@ -37,7 +37,7 @@ static const uint8_t dns_key_wallet[32] = {
 bool process_hints(transaction_t* tx) {
     // Default title
     snprintf(tx->title, sizeof(tx->title), "Transaction");
-    snprintf(tx->action, sizeof(tx->action), "send TON");
+    snprintf(tx->action, sizeof(tx->action), "send GRAM");
     snprintf(tx->recipient, sizeof(tx->recipient), "To");
 
     // No payload
@@ -228,7 +228,7 @@ bool process_hints(transaction_t* tx) {
 #endif
             add_hint_amount(&tx->hints,
                             "Forward amount",
-                            "TON",
+                            "GRAM",
                             fwd_amount_buf,
                             fwd_amount_size,
                             EXPONENT_SMALLEST_UNIT);
@@ -429,7 +429,7 @@ bool process_hints(transaction_t* tx) {
 
         add_hint_amount(&tx->hints,
                         "Withdraw amount",
-                        "TON",
+                        "GRAM",
                         amount_buf,
                         amount_size,
                         EXPONENT_SMALLEST_UNIT);
@@ -675,7 +675,7 @@ bool process_hints(transaction_t* tx) {
 
         add_hint_amount(&tx->hints,
                         "Gas limit",
-                        "TON",
+                        "GRAM",
                         gas_amount_buf,
                         gas_amount_size,
                         EXPONENT_SMALLEST_UNIT);
@@ -694,7 +694,7 @@ bool process_hints(transaction_t* tx) {
                 BitString_storeCoinsBuf(&bits, amount_buf, amount_size);
                 add_hint_amount(&tx->hints,
                                 "Withdrawal amount",
-                                "TON",
+                                "GRAM",
                                 amount_buf,
                                 amount_size,
                                 EXPONENT_SMALLEST_UNIT);
@@ -711,10 +711,10 @@ bool process_hints(transaction_t* tx) {
         // Operation
         if (is_deposit) {
             snprintf(tx->title, sizeof(tx->title), "Deposit");
-            snprintf(tx->action, sizeof(tx->action), "deposit TON");
+            snprintf(tx->action, sizeof(tx->action), "deposit GRAM");
         } else {
             snprintf(tx->title, sizeof(tx->title), "Withdrawal");
-            snprintf(tx->action, sizeof(tx->action), "withdraw TON");
+            snprintf(tx->action, sizeof(tx->action), "withdraw GRAM");
         }
         snprintf(tx->recipient, sizeof(tx->recipient), "Pool");
     }
@@ -755,7 +755,7 @@ bool process_hints(transaction_t* tx) {
 
         add_hint_amount(&tx->hints,
                         "To send from vesting",
-                        "TON",
+                        "GRAM",
                         amount_buf,
                         amount_size,
                         EXPONENT_SMALLEST_UNIT);
