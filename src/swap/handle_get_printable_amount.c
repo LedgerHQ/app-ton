@@ -21,7 +21,7 @@ void swap_handle_get_printable_amount(get_printable_amount_parameters_t* params)
     // If the amount is a fee, its value is nominated in TON even if we're doing an TRC20 swap
     // If there is no coin_configuration, consider that we are doing a TON swap
     if (params->is_fee || params->coin_configuration == NULL) {
-        memcpy(ticker, "TON", sizeof("TON"));
+        memcpy(ticker, "GRAM", sizeof("GRAM"));
         decimals = EXPONENT_SMALLEST_UNIT;
     } else {
         if (!swap_parse_config(params->coin_configuration,

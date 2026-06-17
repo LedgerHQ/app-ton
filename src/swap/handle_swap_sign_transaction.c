@@ -79,7 +79,7 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
     // Parse config and save decimals and ticker
     // If there is no coin_configuration, consider that we are doing a TRX swap
     if (params->coin_configuration == NULL) {
-        memcpy(swap_validated.ticker, "TON", sizeof("TON"));
+        memcpy(swap_validated.ticker, "GRAM", sizeof("GRAM"));
         swap_validated.decimals = EXPONENT_SMALLEST_UNIT;
     } else {
         if (!swap_parse_config(params->coin_configuration,
@@ -230,7 +230,7 @@ bool swap_check_validity(void) {
     }
 
     bool is_jetton_swap =
-        strncmp(G_swap_validated.ticker, "TON", sizeof("TON")) == 0 ? false : true;
+        strncmp(G_swap_validated.ticker, "GRAM", sizeof("GRAM")) == 0 ? false : true;
 
     if (is_jetton_swap &&
         ((G_context.tx_info.transaction.hints.hints_count != 2) ||

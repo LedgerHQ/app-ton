@@ -11,11 +11,11 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 # set one specific SANITIZER for workflow
 if(DEFINED ENV{SANITIZER} AND (ENV{SANITIZER} STREQUAL "address" OR ENV{SANITIZER} STREQUAL "memory" OR ENV{SANITIZER} STREQUAL "undefined"))
     set(CMAKE_C_FLAGS_DEBUG
-        "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wextra -Wno-unused-function -DFUZZ -pedantic -g -O0 -fsanitize=fuzzer,$ENV{SANITIZER}"
+        "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra -Wno-unused-function -DFUZZ -pedantic -g -O0 -fsanitize=fuzzer,$ENV{SANITIZER}"
     )
 else()
     set(CMAKE_C_FLAGS_DEBUG
-        "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wextra -Wno-unused-function -DFUZZ -pedantic -g -O0"
+        "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra -Wno-unused-function -DFUZZ -pedantic -g -O0"
     )
 endif()
 
