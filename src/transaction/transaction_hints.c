@@ -34,7 +34,7 @@ static const uint8_t dns_key_wallet[32] = {
     0xe8, 0xd4, 0x40, 0x50, 0x87, 0x3d, 0xba, 0x86, 0x5a, 0xa7, 0xc1, 0x70, 0xab, 0x4c, 0xce, 0x64,
     0xd9, 0x08, 0x39, 0xa3, 0x4d, 0xcf, 0xd6, 0xcf, 0x71, 0xd1, 0x4e, 0x02, 0x05, 0x44, 0x3b, 0x1b};
 
-bool process_hints(transaction_t* tx) {
+bool process_hints(transaction_t *tx) {
     // Default title
     snprintf(tx->title, sizeof(tx->title), "Transaction");
     snprintf(tx->action, sizeof(tx->action), "send GRAM");
@@ -86,7 +86,7 @@ bool process_hints(transaction_t* tx) {
         snprintf(tx->title, sizeof(tx->title), "Transfer");
 
         // Add code hints
-        add_hint_text(&tx->hints, "Comment", (char*) tx->hints_data, tx->hints_len);
+        add_hint_text(&tx->hints, "Comment", (char *) tx->hints_data, tx->hints_len);
     }
 
     if (tx->hints_type == TRANSACTION_TRANSFER_JETTON ||
@@ -143,7 +143,7 @@ bool process_hints(transaction_t* tx) {
 
                 uint8_t amount_size;
                 uint8_t amount_buf[MAX_VALUE_BYTES_LEN];
-                const char* name = NULL;
+                const char *name = NULL;
                 uint8_t decimals;
 
                 SAFE(jetton_get_ticker(jetton_id, &name));
@@ -859,7 +859,8 @@ bool process_hints(transaction_t* tx) {
         hasCell = true;
 
         // save pointer to the comment (comment_length bytes from the end of tx->hints_data)
-        const char* comment_ptr = (const char*) (tx->hints_data + (tx->hints_len - comment_length));
+        const char *comment_ptr =
+            (const char *) (tx->hints_data + (tx->hints_len - comment_length));
         add_hint_text(&tx->hints, "Comment", comment_ptr, comment_length);
 
         // Operation

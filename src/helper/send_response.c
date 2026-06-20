@@ -32,7 +32,7 @@ int helper_send_response_pubkey() {
     memmove(resp + offset, G_context.pk_info.raw_public_key, PUBKEY_LEN);
     offset += PUBKEY_LEN;
 
-    return io_send_response_buffer(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0},
+    return io_send_response_buffer(&(const buffer_t) {.ptr = resp, .size = offset, .offset = 0},
                                    SW_OK);
 }
 
@@ -50,7 +50,7 @@ int helper_send_response_sig() {
     memmove(resp + offset, G_context.tx_info.m_hash, HASH_LEN);
     offset += HASH_LEN;
 
-    return io_send_response_buffer(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0},
+    return io_send_response_buffer(&(const buffer_t) {.ptr = resp, .size = offset, .offset = 0},
                                    SW_OK);
 }
 
@@ -68,7 +68,7 @@ int helper_send_response_sig_proof() {
     memmove(resp + offset, G_context.proof_info.hash, HASH_LEN);
     offset += HASH_LEN;
 
-    return io_send_response_buffer(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0},
+    return io_send_response_buffer(&(const buffer_t) {.ptr = resp, .size = offset, .offset = 0},
                                    SW_OK);
 }
 
@@ -86,6 +86,6 @@ int helper_send_response_sig_sign_data() {
     memmove(resp + offset, G_context.sign_data_info.cell_hash, HASH_LEN);
     offset += HASH_LEN;
 
-    return io_send_response_buffer(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0},
+    return io_send_response_buffer(&(const buffer_t) {.ptr = resp, .size = offset, .offset = 0},
                                    SW_OK);
 }

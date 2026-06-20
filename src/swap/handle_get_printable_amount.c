@@ -8,7 +8,7 @@
 #include "constants.h"
 
 /* Set empty printable_amount on error, printable amount otherwise */
-void swap_handle_get_printable_amount(get_printable_amount_parameters_t* params) {
+void swap_handle_get_printable_amount(get_printable_amount_parameters_t *params) {
     PRINTF("coin_configuration %.*H\n",
            params->coin_configuration_length,
            params->coin_configuration);

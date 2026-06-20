@@ -21,4 +21,4 @@ typedef enum {
     TRANSACTION_VESTING_SEND_MSG_COMMENT = 13,
 } transaction_hint_type_e;
 
-bool process_hints(transaction_t* tx);
+bool process_hints(transaction_t *tx);

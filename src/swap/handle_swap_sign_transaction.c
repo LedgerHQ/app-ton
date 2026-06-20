@@ -41,10 +41,10 @@ typedef struct swap_validated_s {
 static swap_validated_t G_swap_validated;
 
 // Save the BSS address where we will write the return value when finished
-static uint8_t* G_swap_sign_return_value_address;
+static uint8_t *G_swap_sign_return_value_address;
 
 // Save the data validated during the Exchange app flow
-bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
+bool swap_copy_transaction_parameters(create_transaction_parameters_t *params) {
     PRINTF("Inside Ton swap_copy_transaction_parameters\n");
 
     // Ensure no extraid
@@ -132,8 +132,8 @@ bool swap_copy_transaction_parameters(create_transaction_parameters_t* params) {
     return true;
 }
 
-static address_t* swap_get_tx_recipient_address(bool is_jetton_swap) {
-    address_t* recipient = NULL;
+static address_t *swap_get_tx_recipient_address(bool is_jetton_swap) {
+    address_t *recipient = NULL;
 
     /*
      *  XXX:
@@ -164,7 +164,7 @@ static address_t* swap_get_tx_recipient_address(bool is_jetton_swap) {
     return recipient;
 }
 
-static void swap_get_new_owner_address(address_t* address) {
+static void swap_get_new_owner_address(address_t *address) {
     uint8_t decoded[ADDRESS_DECODED_LENGTH];
 
     PRINTF("Swap recipient address %s\n", G_swap_validated.recipient);
@@ -189,7 +189,7 @@ static void swap_get_new_owner_address(address_t* address) {
  */
 static bool swap_compare_recipient_address(bool is_jetton_swap) {
     bool match = false;
-    address_t* tx_recipient = swap_get_tx_recipient_address(is_jetton_swap);
+    address_t *tx_recipient = swap_get_tx_recipient_address(is_jetton_swap);
     address_t swap_recipient;
 
     swap_get_new_owner_address(&swap_recipient);
@@ -270,13 +270,13 @@ bool swap_check_validity(void) {
     }
 
     uint8_t amount_length = 0;
-    uint8_t* amount = NULL;
+    uint8_t *amount = NULL;
     // Depending on swap operation, we need to get the proper amount from the transaction
     if (is_jetton_swap) {
         amount_length = G_context.tx_info.transaction.hints.hints[0].amount.value_len;
         amount = G_context.tx_info.transaction.hints.hints[0].amount.value;
         uint8_t fees_length = G_context.tx_info.transaction.value_len;
-        uint8_t* fees = G_context.tx_info.transaction.value_buf;
+        uint8_t *fees = G_context.tx_info.transaction.value_buf;
         if ((G_swap_validated.fees_length != fees_length) ||
             (memcmp(G_swap_validated.fees, fees, G_swap_validated.fees_length) != 0)) {
             PRINTF("Fees do not match, promised %.*H, received %.*H\n",

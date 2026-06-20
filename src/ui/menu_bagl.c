@@ -24,12 +24,12 @@
 #include "../globals.h"
 #include "menu.h"
 
-static const char* settings_submenu_getter(unsigned int idx);
+static const char *settings_submenu_getter(unsigned int idx);
 static void settings_submenu_selector(unsigned int idx);
 
-static const char* const no_yes_data_getter_values[] = {"No", "Yes", "Back"};
+static const char *const no_yes_data_getter_values[] = {"No", "Yes", "Back"};
 
-static const char* no_yes_data_getter(unsigned int idx) {
+static const char *no_yes_data_getter(unsigned int idx) {
     if (idx < ARRAYLEN(no_yes_data_getter_values)) {
         return no_yes_data_getter_values[idx];
     }
@@ -40,7 +40,7 @@ static const char* no_yes_data_getter(unsigned int idx) {
 // Allow blind signing submenu
 
 static void allow_blind_sign_data_change(bool value) {
-    nvm_write((void*) &N_storage.blind_signing_enabled, (void*) &value, sizeof(value));
+    nvm_write((void *) &N_storage.blind_signing_enabled, (void *) &value, sizeof(value));
 }
 
 static void allow_blind_sign_data_selector(unsigned int idx) {
@@ -61,7 +61,7 @@ static void allow_blind_sign_data_selector(unsigned int idx) {
 // Expert mode submenu
 
 static void expert_mode_data_change(bool value) {
-    nvm_write((void*) &N_storage.expert_mode, (void*) &value, sizeof(value));
+    nvm_write((void *) &N_storage.expert_mode, (void *) &value, sizeof(value));
 }
 
 static void expert_mode_data_selector(unsigned int idx) {
@@ -78,13 +78,13 @@ static void expert_mode_data_selector(unsigned int idx) {
     ux_menulist_init_select(0, settings_submenu_getter, settings_submenu_selector, 1);
 }
 
-static const char* const settings_submenu_getter_values[] = {
+static const char *const settings_submenu_getter_values[] = {
     "Allow blind sign",
     "Expert mode",
     "Back",
 };
 
-static const char* settings_submenu_getter(unsigned int idx) {
+static const char *settings_submenu_getter(unsigned int idx) {
     if (idx < ARRAYLEN(settings_submenu_getter_values)) {
         return settings_submenu_getter_values[idx];
     }
