@@ -1,0 +1,19 @@
+name: "CodeQL"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    # Excluded path: add the paths you want to ignore instead of deleting the workflow
+    paths-ignore:
+      - '.github/workflows/*.yml'
+      - 'tests/*'
+
+jobs:
+  analyse:
+    name: Call Ledger CodeQL analysis
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_codeql_checks.yml@v1
+    secrets: inherit
