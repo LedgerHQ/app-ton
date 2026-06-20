@@ -8,14 +8,14 @@ endif()
 project(FuzzTxParser
         VERSION 1.0
 	      DESCRIPTION "Fuzzing of transaction parser"
-        LANGUAGES CXX)
+        LANGUAGES C)
 
 # guard against bad build-type strings
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
     message(FATAL_ERROR "Fuzzer needs to be built with Clang")
 endif()
 
@@ -53,7 +53,7 @@ string(REPLACE " " ";" COMPILATION_FLAGS ${COMPILATION_FLAGS_})
 
 include(extra/TxParser.cmake)
 
-add_executable(fuzz_tx_parser fuzz_tx_parser.cc)
+add_executable(fuzz_tx_parser fuzz_tx_parser.c)
 
 target_compile_options(fuzz_tx_parser PUBLIC ${COMPILATION_FLAGS})
 target_link_options(fuzz_tx_parser PUBLIC ${COMPILATION_FLAGS})

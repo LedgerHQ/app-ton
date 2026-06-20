@@ -14,9 +14,9 @@ void test_with_ticker(void **state) {
 
     char output[16] = {0};
 
-    assert_true(amountToString(input, sizeof(input), 0, "TON", output, sizeof(output)));
+    assert_true(amountToString(input, sizeof(input), 0, "GRAM", output, sizeof(output)));
 
-    static const char expected[] = "TON 256";
+    static const char expected[] = "GRAM 256";
 
     assert_memory_equal(output, expected, sizeof(expected));
 }
