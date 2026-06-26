@@ -22,3 +22,5 @@ bool buffer_read_cell_ref(buffer_t *buf, CellRef_t *out);
  *
  */
 parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx);
+
+parser_status_e message_deserialize(buffer_t *buf, transaction_t *full_tx, message_t *tx);

@@ -3,16 +3,13 @@
 #include <string.h>
 #include <sys/types.h>
 
-extern "C" {
 #include "common/mybuffer.h"
 #include "transaction/deserialize.h"
 #include "transaction/types.h"
-}
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    buffer_t buf = {.ptr = data, .size = size, .offset = 0};
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    buffer_t buf = {.ptr = (uint8_t *) data, .size = size, .offset = 0};
     transaction_t tx;
-    parser_status_e status;
 
     memset(&tx, 0, sizeof(tx));
 

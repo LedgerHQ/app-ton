@@ -144,7 +144,7 @@ static address_t* swap_get_tx_recipient_address(bool is_jetton_swap) {
         PRINTF("Tx recipient is a jetton wallet address\n");
         recipient = &G_context.tx_info.transaction.hints.hints[1].address.address;
     } else {
-        recipient = &G_context.tx_info.transaction.to;
+        recipient = &G_context.tx_info.messages[0].to;
     }
 
     /*
@@ -262,7 +262,7 @@ bool swap_check_validity(void) {
 
     PRINTF("Valid operation %d\n", G_context.tx_info.transaction.hints_type);
 
-    if (G_context.tx_info.transaction.send_mode & 128) {
+    if (G_context.tx_info.messages[0].send_mode & 128) {
         PRINTF("Amount MAX is refused\n");
         io_send_sw(SW_SWAP_FAILURE);
         // unreachable
@@ -275,8 +275,8 @@ bool swap_check_validity(void) {
     if (is_jetton_swap) {
         amount_length = G_context.tx_info.transaction.hints.hints[0].amount.value_len;
         amount = G_context.tx_info.transaction.hints.hints[0].amount.value;
-        uint8_t fees_length = G_context.tx_info.transaction.value_len;
-        uint8_t* fees = G_context.tx_info.transaction.value_buf;
+        uint8_t fees_length = G_context.tx_info.messages[0].value_len;
+        uint8_t* fees = G_context.tx_info.messages[0].value_buf;
         if ((G_swap_validated.fees_length != fees_length) ||
             (memcmp(G_swap_validated.fees, fees, G_swap_validated.fees_length) != 0)) {
             PRINTF("Fees do not match, promised %.*H, received %.*H\n",
@@ -291,8 +291,8 @@ bool swap_check_validity(void) {
             PRINTF("Fees match %.*H\n", fees_length, fees);
         }
     } else {
-        amount_length = G_context.tx_info.transaction.value_len;
-        amount = G_context.tx_info.transaction.value_buf;
+        amount_length = G_context.tx_info.messages[0].value_len;
+        amount = G_context.tx_info.messages[0].value_buf;
     }
 
     if (G_swap_validated.amount_length != amount_length) {

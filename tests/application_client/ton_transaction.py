@@ -709,7 +709,8 @@ class Transaction:
                  state_init: Optional[StateInit] = None,
                  payload: Optional[Payload] = None,
                  subwallet_id: Optional[int] = None,
-                 include_wallet_op: bool = True) -> None:
+                 include_wallet_op: bool = True,
+                 expected_public_key: Optional[bytes] = None) -> None:
         self.to: Address = to
         self.send_mode: SendMode = send_mode
         self.seqno: int = seqno
@@ -720,16 +721,25 @@ class Transaction:
         self.payload: Optional[Payload] = payload
         self.subwallet_id: Optional[int] = subwallet_id
         self.include_wallet_op: bool = include_wallet_op
+        self.expected_public_key: Optional[bytes] = expected_public_key
 
     def header_bytes(self) -> bytes:
-        if not self.include_wallet_op or self.subwallet_id is not None:
+        if (not self.include_wallet_op
+                or self.subwallet_id is not None
+                or self.expected_public_key is not None):
+            flags = 0
+            if self.include_wallet_op:
+                flags |= 0x01
+            if self.expected_public_key is not None:
+                flags |= 0x04
             return b"".join([
                 bytes([1]),
                 (
                     (self.subwallet_id if self.subwallet_id is not None else 698983191)
                     .to_bytes(4, byteorder="big")
                 ),
-                bytes([1 if self.include_wallet_op else 0])
+                bytes([flags]),
+                bytes() if self.expected_public_key is None else self.expected_public_key
             ])
 
         return bytes([0])
@@ -806,3 +816,121 @@ class Transaction:
             .store_ref(self.order_cell())
             .end_cell()
         )
+
+
+class MultiTransactionMessage:
+    def __init__(self,
+                 to: Address,
+                 send_mode: SendMode,
+                 bounce: bool,
+                 amount: int,
+                 state_init: Optional[StateInit] = None,
+                 payload: Optional[Payload] = None) -> None:
+        self.to: Address = to
+        self.send_mode: SendMode = send_mode
+        self.bounce: bool = bounce
+        self.amount: int = amount
+        self.state_init: Optional[StateInit] = state_init
+        self.payload: Optional[Payload] = payload
+
+    def to_request_bytes(self) -> bytes:
+        return b"".join([
+            write_varuint(self.amount),
+            write_address(self.to),
+            bytes([1 if self.bounce else 0]),
+            bytes([self.send_mode]),
+            self.state_init_part_bytes(),
+            self.payload_part_bytes()
+        ])
+
+    def state_init_part_bytes(self) -> bytes:
+        if self.state_init is None:
+            return bytes([0])
+
+        si_cell = self.state_init.to_cell()
+        return b"".join([
+            bytes([1]),
+            write_cell(si_cell)
+        ])
+
+    def payload_part_bytes(self) -> bytes:
+        if self.payload is None:
+            return bytes([0, 0])
+
+        payload_bytes = self.payload.to_request_bytes()
+        payload_cell = self.payload.to_message_body_cell()
+        return b"".join([
+            bytes([1]),
+            write_cell(payload_cell),
+            (b"".join([
+                bytes([1]),
+                payload_bytes
+            ]) if payload_bytes is not None else bytes([0]))
+        ])
+
+    def order_cell(self) -> Cell:
+        b = (
+            begin_cell()
+            .store_uint(1, 2)
+            .store_bit(self.bounce)
+            .store_uint(0, 3)
+            .store_address(self.to)
+            .store_coins(self.amount)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32)
+        )
+        if self.state_init is None:
+            b = b.store_bit(0)
+        else:
+            b = b.store_uint(3, 2).store_ref(self.state_init.to_cell())
+        b = b.store_maybe_ref(None if self.payload is None else self.payload.to_message_body_cell())
+        return b.end_cell()
+
+
+class MultiTransaction:
+    def __init__(self,
+                 seqno: int,
+                 timeout: int,
+                 messages: list[MultiTransactionMessage],
+                 subwallet_id: Optional[int] = None,
+                 include_wallet_op: bool = True) -> None:
+        self.seqno: int = seqno
+        self.timeout: int = timeout
+        self.subwallet_id: Optional[int] = subwallet_id
+        self.include_wallet_op: bool = include_wallet_op
+        self.messages: list[MultiTransactionMessage] = messages
+
+    def header_bytes(self) -> bytes:
+        if not self.include_wallet_op or self.subwallet_id is not None:
+            return b"".join([
+                bytes([1]),
+                (
+                    (self.subwallet_id if self.subwallet_id is not None else 698983191)
+                    .to_bytes(4, byteorder="big")
+                ),
+                bytes([1 if self.include_wallet_op else 0])
+            ])
+
+        return bytes([0])
+
+    def to_request_bytes(self) -> tuple[bytes, list[bytes]]:
+        return b"".join([
+            self.header_bytes(),
+            self.seqno.to_bytes(4, byteorder="big"),
+            self.timeout.to_bytes(4, byteorder="big")
+        ]), [message.to_request_bytes() for message in self.messages]
+
+    def transfer_cell(self) -> Cell:
+        b = (
+            begin_cell()
+            .store_uint(698983191 if self.subwallet_id is None else self.subwallet_id, 32)
+            .store_uint(self.timeout, 32)
+            .store_uint(self.seqno, 32)
+        )
+
+        if self.include_wallet_op:
+            b = b.store_uint(0, 8)
+
+        for msg in self.messages:
+            b = b.store_uint(msg.send_mode, 8).store_ref(msg.order_cell())
+
+        return b.end_cell()

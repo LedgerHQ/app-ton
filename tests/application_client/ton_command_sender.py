@@ -19,6 +19,10 @@ class P1(IntEnum):
 
     P1_NON_CONFIRM = 0x00
 
+    P1_MULTI_TX = 0x04
+    P1_FIRST = 0x01
+    P1_MORE = 0x02
+
     P1_SIGN_DATA_OLD = 0x00
     P1_SIGN_DATA_NEW = 0x01
 
@@ -56,6 +60,7 @@ class Errors(IntEnum):
     SW_REQUEST_TOO_LONG        = 0xB00B
     SW_BAD_BIP32_PATH          = 0XB0BD
     SW_BLIND_SIGNING_DISABLED  = 0xBD00
+    SW_PUBLIC_KEY_MISMATCH     = 0xBD01
 
 class AddressDisplayFlags(IntFlag):
     NONE = 0
@@ -186,6 +191,49 @@ class BoilerplateCommandSender:
                                          p2=P2.P2_NONE,
                                          data=messages[-1]) as response:
             yield response
+
+    def sign_tx_multi_tx(self, path: str, transaction: bytes, n_messages: int):
+        self.backend.exchange(cla=CLA,
+                              ins=InsType.SIGN_TX,
+                              p1=P1.P1_MULTI_TX,
+                              p2=(P2.P2_FIRST | P2.P2_MORE),
+                              data=pack_derivation_path(path))
+
+        tx_bytes = b"".join([
+            n_messages.to_bytes(1, byteorder="big"),
+            transaction,
+        ])
+
+        tx_chunks = split_message(tx_bytes, MAX_APDU_LEN)
+        for chunk in tx_chunks:
+            self.backend.exchange(cla=CLA,
+                                  ins=InsType.SIGN_TX,
+                                  p1=P1.P1_MULTI_TX,
+                                  p2=P2.P2_MORE,
+                                  data=chunk)
+
+    @contextmanager
+    def sign_tx_multi_msg(self, message: bytes, last: bool) -> Generator[None, None, None]:
+        chunks = split_message(message, MAX_APDU_LEN)
+        for j, chunk in enumerate(chunks):
+            p1 = P1.P1_MULTI_TX
+            if j == 0:
+                p1 |= P1.P1_FIRST
+            if j < len(chunks) - 1:
+                p1 |= P1.P1_MORE
+            if j == len(chunks) - 1:
+                with self.backend.exchange_async(cla=CLA,
+                                    ins=InsType.SIGN_TX,
+                                    p1=p1,
+                                    p2=(P2.P2_NONE if last else P2.P2_MORE),
+                                    data=chunk) as response:
+                    yield response
+            else:
+                self.backend.exchange(cla=CLA,
+                                    ins=InsType.SIGN_TX,
+                                    p1=p1,
+                                    p2=P2.P2_MORE,
+                                    data=chunk)
 
     @contextmanager
     def sign_data(

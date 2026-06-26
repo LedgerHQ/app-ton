@@ -83,6 +83,39 @@ Then an arbitrary number of chunks with transaction data (see [TRANSACTION.md](.
 | --- | --- | --- |
 | 98 | 0x9000 | `len(signature) (1)` \|\| <br> `signature (64)` \|\| <br> `len(hash) (1)` \|\| <br> `hash (32)` \|\||
 
+## SIGN_TX (multi-transaction)
+
+### Command
+
+Unlike the single-transaction, utilizes P1:
+- P1 bit 4 is always set
+- P1 bit 2 is set for each chunk which encodes a transaction/message, except for the last chunk in a transaction/message
+- P1 bit 1 is set for each chunk that is the beginning of the encoding of a transaction/message
+
+Sent as series of packages. First one contains bip32 path, which must be at least 3 elements long and must start with the prefix `m/44'/607'/`:
+
+| CLA | INS | P1 | P2 | Lc | CData |
+| --- | --- | --- | --- | --- | --- |
+| 0xE0 | 0x06 | 0x04 | 0x03 (first & more) | 1 + 4n | `len(bip32_path) (1)` \|\|<br> `bip32_path{1} (4)` \|\|<br>`...` \|\|<br>`bip32_path{n} (4)` |
+
+Then the number of messages and the transaction parameters (see [TRANSACTION.md](./TRANSACTION.md) - the parameters before the boundary). The number of messages must be 1-4.
+
+| CLA | INS | P1 | P2 | Lc | CData |
+| --- | --- | --- | --- | --- | --- |
+| 0xE0 | 0x06 | 0x04 | 0x02 (more) | `1 + len(chunk)` | `number_of_messages (1)` \|\| `chunk` |
+
+Then an arbitrary number of chunks with message data (see [TRANSACTION.md](./TRANSACTION.md) - the parameters after the boundary).
+
+| CLA | INS | P1 | P2 | Lc | CData |
+| --- | --- | --- | --- | --- | --- |
+| 0xE0 | 0x06 | 0x07 (first message chunk & more) <br> 0x06 (more) <br> 0x04 (last message chunk) | 0x02 (more) <br> 0x00 (last) | `len(chunk)` | `chunk` |
+
+### Response
+
+| Response length (bytes) | SW | RData |
+| --- | --- | --- |
+| 98 | 0x9000 | `len(signature) (1)` \|\| <br> `signature (64)` \|\| <br> `len(hash) (1)` \|\| <br> `hash (32)` \|\||
+
 ## GET_ADDRESS_PROOF
 
 ### Command
@@ -173,4 +206,5 @@ In the current version, `flags` has:
 | 0xB00B | `SW_REQUEST_TOO_LONG` | The request is too long |
 | 0xB0BD | `SW_BAD_BIP32_PATH` | The bip32 derivation path is invalid |
 | 0xBD00 | `SW_BLIND_SIGNING_DISABLED` | A blind transaction was requested, but blind signing is disabled |
+| 0xBD01 | `SW_PUBLIC_KEY_MISMATCH` | Actual public key does not match the expected public key |
 | 0x9000 | `OK` | Success |

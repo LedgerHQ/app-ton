@@ -76,3 +76,8 @@
  * Status word for a blind signing request when blind signing is disabled.
  */
 #define SW_BLIND_SIGNING_DISABLED 0xBD00
+
+/**
+ * Status word for a public key mismatch.
+ */
+#define SW_PUBLIC_KEY_MISMATCH 0xBD01

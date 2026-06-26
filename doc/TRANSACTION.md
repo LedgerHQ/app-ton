@@ -30,9 +30,11 @@ We shall also have another format for cells - 1 byte for length in bytes (n) and
 | --- | :---: | --- |
 | `tag` | 1 | 0x00 for app versions <2.1.0, 0x00 or 0x01 for app versions >=2.1.0. Higher values enable more features |
 | `subwallet_id` | 0 or 4 | Subwallet id. Only present when `tag == 0x01` |
-| `include_wallet_op` | 0 or 1 | Whether to include the 8-bit wallet op (0x01 to include, 0x00 to not include). Only present when `tag == 0x01` |
+| `flags` | 0 or 1 | Bit 0 (least significant) signifies whether to include the 8-bit wallet op (0x01 to include, 0x00 to not include). Bit 2 signifies whether to include `expected_public_key` (0x04 to include, 0x00 to not include); bit 2 may only be used with app versions >=2.9.0. Only present when `tag == 0x01` |
+| `expected_public_key` | 0 or 32 | The expected public key to be used. Does not influence transaction contents, but Ledger will throw an error if the derived public key does not match the expected public key. Only present if `flags & 0x02` |
 | `seqno` | 4 | A sequence number used to prevent message replay |
 | `timeout` | 4 | Message timeout |
+| | | *This is the boundary between transaction parameters and message parameters; this is important for multi-transaction requests, but can be ignored for single-transaction requests* |
 | `value` | `varuint` | The amount in nanotons to send to the destination address encoded as described above |
 | `bounce` | 1 | 0x01 or 0x00 for bounce flag |
 | `send_mode` | 1 | Send mode of the message |

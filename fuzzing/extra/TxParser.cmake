@@ -56,5 +56,6 @@ target_include_directories(txparser PUBLIC
     ${BOLOS_SDK}/lib_cxng/include
     ${BOLOS_SDK}/lib_cxng/src
     ${BOLOS_SDK}/target/${TARGET}/include
-    #${CMAKE_CURRENT_SOURCE_DIR}/../src/transaction
+    ${BOLOS_SDK}/io/include
+    ${BOLOS_SDK}/io_legacy/include
 )
