@@ -34,14 +34,14 @@ static const uint8_t dns_key_wallet[32] = {
     0xe8, 0xd4, 0x40, 0x50, 0x87, 0x3d, 0xba, 0x86, 0x5a, 0xa7, 0xc1, 0x70, 0xab, 0x4c, 0xce, 0x64,
     0xd9, 0x08, 0x39, 0xa3, 0x4d, 0xcf, 0xd6, 0xcf, 0x71, 0xd1, 0x4e, 0x02, 0x05, 0x44, 0x3b, 0x1b};
 
-bool process_hints(transaction_t* tx) {
+bool process_hints(transaction_t* tx, message_t* msg) {
     // Default title
     snprintf(tx->title, sizeof(tx->title), "Transaction");
     snprintf(tx->action, sizeof(tx->action), "send TON");
     snprintf(tx->recipient, sizeof(tx->recipient), "To");
 
     // No payload
-    if (!tx->has_payload) {
+    if (!msg->has_payload) {
         snprintf(tx->title, sizeof(tx->title), "Transfer");
         tx->is_blind = false;
         return true;
@@ -136,7 +136,7 @@ bool process_hints(transaction_t* tx) {
 
                 SAFE(jetton_get_wallet_address(jetton_id, &owner, &jetton_wallet));
 
-                if (memcmp(jetton_wallet.hash, G_context.tx_info.transaction.to.hash, HASH_LEN) !=
+                if (memcmp(jetton_wallet.hash, msg->to.hash, HASH_LEN) !=
                     0) {
                     return false;
                 }
@@ -874,7 +874,7 @@ bool process_hints(transaction_t* tx) {
 
     // Check hash
     if (hasCell) {
-        if (memcmp(cell.hash, tx->payload.hash, HASH_LEN) != 0) {
+        if (memcmp(cell.hash, msg->payload.hash, HASH_LEN) != 0) {
             return false;
         }
         tx->is_blind = false;

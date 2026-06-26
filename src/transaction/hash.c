@@ -9,25 +9,17 @@
 #include "../common/bits.h"
 #include "../constants.h"
 
-bool hash_tx(transaction_ctx_t *ctx) {
+bool serialize_message(message_t *msg, CellRef_t *ref) {
     BitString_t bits;
-    struct CellRef_t payload_ref;
-    struct CellRef_t state_init_ref;
 
-    //
-    // Internal Message
-    //
-
-    struct CellRef_t internalMessageRef;
     BitString_init(&bits);
     BitString_storeBit(&bits, 0);                                // tag
     BitString_storeBit(&bits, 1);                                // ihr_disabled
-    BitString_storeBit(&bits, ctx->transaction.bounce ? 1 : 0);  // bounce
+    BitString_storeBit(&bits, msg->bounce ? 1 : 0);  // bounce
     BitString_storeBit(&bits, 0);                                // bounced
     BitString_storeAddressNull(&bits);                           // from
-    BitString_storeAddress(&bits, ctx->transaction.to.chain, ctx->transaction.to.hash);  // to
-    // amount
-    BitString_storeCoinsBuf(&bits, ctx->transaction.value_buf, ctx->transaction.value_len);
+    BitString_storeAddress(&bits, msg->to.chain, msg->to.hash);  // to
+    BitString_storeCoinsBuf(&bits, msg->value_buf, msg->value_len); // amount
     BitString_storeBit(&bits, 0);       // Currency collection (not supported)
     BitString_storeCoins(&bits, 0);     // ihr_fees
     BitString_storeCoins(&bits, 0);     // fwd_fees
@@ -35,47 +27,36 @@ bool hash_tx(transaction_ctx_t *ctx) {
     BitString_storeUint(&bits, 0, 32);  // CreatedAt
 
     // Refs
-    if (ctx->transaction.has_payload && ctx->transaction.has_state_init) {
+    if (msg->has_payload && msg->has_state_init) {
         BitString_storeBit(&bits, 1);  // state-init
         BitString_storeBit(&bits, 1);  // state-init ref
         BitString_storeBit(&bits, 1);  // body in ref
 
+        CellRef_t internalMessageRefs[2];
+
         // Create refs
-        payload_ref.max_depth = ctx->transaction.payload.max_depth;
-        memmove(payload_ref.hash, ctx->transaction.payload.hash, HASH_LEN);
-        state_init_ref.max_depth = ctx->transaction.state_init.max_depth;
-        memmove(state_init_ref.hash, ctx->transaction.state_init.hash, HASH_LEN);
+        internalMessageRefs[0] = msg->state_init;
+        internalMessageRefs[1] = msg->payload;
 
         // Hash cell
-        struct CellRef_t internalMessageRefs[2] = {state_init_ref, payload_ref};
-        if (!hash_Cell(&bits, internalMessageRefs, 2, &internalMessageRef)) {
+        if (!hash_Cell(&bits, internalMessageRefs, 2, ref)) {
             return false;
         }
-    } else if (ctx->transaction.has_payload) {
+    } else if (msg->has_payload) {
         BitString_storeBit(&bits, 0);  // no state-init
         BitString_storeBit(&bits, 1);  // body in ref
 
-        // Create ref
-        payload_ref.max_depth = ctx->transaction.payload.max_depth;
-        memmove(payload_ref.hash, ctx->transaction.payload.hash, HASH_LEN);
-
         // Hash cell
-        struct CellRef_t internalMessageRefs[1] = {payload_ref};
-        if (!hash_Cell(&bits, internalMessageRefs, 1, &internalMessageRef)) {
+        if (!hash_Cell(&bits, &msg->payload, 1, ref)) {
             return false;
         }
-    } else if (ctx->transaction.has_state_init) {
+    } else if (msg->has_state_init) {
         BitString_storeBit(&bits, 1);  // no state-init
         BitString_storeBit(&bits, 1);  // state-init ref
         BitString_storeBit(&bits, 0);  // body inline
 
-        // Create ref
-        state_init_ref.max_depth = ctx->transaction.state_init.max_depth;
-        memmove(state_init_ref.hash, ctx->transaction.state_init.hash, HASH_LEN);
-
         // Hash cell
-        struct CellRef_t internalMessageRefs[1] = {state_init_ref};
-        if (!hash_Cell(&bits, internalMessageRefs, 1, &internalMessageRef)) {
+        if (!hash_Cell(&bits, &msg->state_init, 1, ref)) {
             return false;
         }
     } else {
@@ -83,7 +64,25 @@ bool hash_tx(transaction_ctx_t *ctx) {
         BitString_storeBit(&bits, 0);  // body inline
 
         // Hash cell
-        if (!hash_Cell(&bits, NULL, 0, &internalMessageRef)) {
+        if (!hash_Cell(&bits, NULL, 0, ref)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool hash_tx(transaction_ctx_t *ctx) {
+    BitString_t bits;
+
+    if (ctx->message_count == 0 || ctx->message_count > MAX_MESSAGES) {
+        return false;
+    }
+
+    CellRef_t internalMessageRefs[MAX_MESSAGES];
+
+    for (int i = 0; i < ctx->message_count; i++) {
+        if (!serialize_message(&ctx->messages[i], &internalMessageRefs[i])) {
             return false;
         }
     }
@@ -100,9 +99,10 @@ bool hash_tx(transaction_ctx_t *ctx) {
     if (ctx->transaction.include_wallet_op) {
         BitString_storeUint(&bits, 0, 8);  // Simple order
     }
-    BitString_storeUint(&bits, ctx->transaction.send_mode, 8);  // Send Mode
-    struct CellRef_t orderRefs[1] = {internalMessageRef};
-    if (!hash_Cell(&bits, orderRefs, 1, &orderRef)) {
+    for (int i = 0; i < ctx->message_count; i++) {
+        BitString_storeUint(&bits, ctx->messages[i].send_mode, 8);
+    }
+    if (!hash_Cell(&bits, internalMessageRefs, ctx->message_count, &orderRef)) {
         return false;
     }
 

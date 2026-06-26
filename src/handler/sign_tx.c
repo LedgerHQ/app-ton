@@ -37,7 +37,7 @@
 #include "../transaction/hash.h"
 #include "handle_swap_sign_transaction.h"
 
-int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
+int handler_sign_tx(buffer_t *cdata, bool first, bool more, bool multi_tx, bool first_tx, bool more_tx) {
     if (first) {  // first APDU, parse BIP32 path
         explicit_bzero(&G_context, sizeof(G_context));
 
@@ -52,14 +52,36 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
             return io_send_sw(SW_BAD_BIP32_PATH);
         }
 
+        if (multi_tx && (first_tx || more_tx)) {
+            return io_send_sw(SW_WRONG_P1P2);
+        }
+
         G_context.req_type = CONFIRM_TRANSACTION;
         G_context.state = STATE_NONE;
+        G_context.tx_info.multi_tx = multi_tx;
 
         return io_send_sw(SW_OK);
     }
 
     if (G_context.req_type != CONFIRM_TRANSACTION) {
         return io_send_sw(SW_BAD_STATE);
+    }
+
+    if (multi_tx != G_context.tx_info.multi_tx) {
+        return io_send_sw(SW_BAD_STATE);
+    }
+
+    if (!more && more_tx) {
+        return io_send_sw(SW_WRONG_P1P2);
+    }
+
+    if (first_tx) {
+        if (G_context.tx_info.message_count >= MAX_MESSAGES) {
+            return io_send_sw(SW_BAD_STATE);
+        }
+
+        G_context.tx_info.raw_tx_len = 0;
+        G_context.tx_info.message_active = true;
     }
 
     if (G_context.tx_info.raw_tx_len + cdata->size > MAX_TRANSACTION_LEN) {
@@ -72,16 +94,62 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
 
     G_context.tx_info.raw_tx_len += cdata->size;
 
-    if (more) {
+    bool will_continue = multi_tx ? more_tx : more;
+
+    if (will_continue) {
         return io_send_sw(SW_OK);
     }
 
     buffer_t buf = {.ptr = G_context.tx_info.raw_tx,
-                    .size = G_context.tx_info.raw_tx_len,
-                    .offset = 0};
+        .size = G_context.tx_info.raw_tx_len,
+        .offset = 0};
 
-    // Parse
-    parser_status_e status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
+    if (multi_tx && !G_context.tx_info.have_tx_params) {
+        if (first_tx || more_tx) {
+            return io_send_sw(SW_WRONG_P1P2);
+        }
+
+        if (!buffer_read_u8(&buf, &G_context.tx_info.expected_message_count)) {
+            return io_send_sw(SW_WRONG_DATA_LENGTH);
+        }
+
+        if (G_context.tx_info.expected_message_count < 1 && G_context.tx_info.expected_message_count > MAX_MESSAGES) {
+            return io_send_sw(SW_BAD_STATE);
+        }
+
+        parser_status_e status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
+        PRINTF("Parsing status: %d.\n", status);
+        if (status != PARSING_OK) {
+            return io_send_sw(status == PUBLIC_KEY_MISMATCH_ERROR ? SW_PUBLIC_KEY_MISMATCH : SW_TX_PARSING_FAIL);
+        }
+
+        G_context.tx_info.have_tx_params = true;
+
+        return io_send_sw(SW_OK);
+    }
+
+    if (multi_tx) {
+        if (!G_context.tx_info.have_tx_params || !G_context.tx_info.message_active) {
+            return io_send_sw(SW_BAD_STATE);
+        }
+
+        G_context.tx_info.message_active = false;
+        G_context.tx_info.message_count++;
+
+        if (G_context.tx_info.message_count > G_context.tx_info.expected_message_count) {
+            return io_send_sw(SW_BAD_STATE);
+        }
+    } else {
+        G_context.tx_info.message_count = 1;
+
+        parser_status_e status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
+        PRINTF("Parsing status: %d.\n", status);
+        if (status != PARSING_OK) {
+            return io_send_sw(status == PUBLIC_KEY_MISMATCH_ERROR ? SW_PUBLIC_KEY_MISMATCH : SW_TX_PARSING_FAIL);
+        }
+    }
+
+    parser_status_e status = message_deserialize(&buf, &G_context.tx_info.transaction, &G_context.tx_info.messages[G_context.tx_info.message_count - 1]);
     PRINTF("Parsing status: %d.\n", status);
     if (status != PARSING_OK) {
         return io_send_sw(SW_TX_PARSING_FAIL);
@@ -92,9 +160,16 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
         return io_send_sw(SW_BLIND_SIGNING_DISABLED);
     }
 
-    // Hash
-    if (!hash_tx(&G_context.tx_info)) {
-        return io_send_sw(SW_TX_PARSING_FAIL);
+    if (!more) {
+        if (multi_tx && G_context.tx_info.message_count != G_context.tx_info.expected_message_count) {
+            return io_send_sw(SW_BAD_STATE);
+        }
+
+        if (!hash_tx(&G_context.tx_info)) {
+            return io_send_sw(SW_TX_PARSING_FAIL);
+        }
+
+        G_context.tx_info.final_message = true;
     }
 
     G_context.state = STATE_PARSED;
@@ -104,6 +179,11 @@ int handler_sign_tx(buffer_t *cdata, bool first, bool more) {
     // If we are in swap context, do not redisplay the message data
     // Instead, ensure they are identical with what was previously displayed
     if (G_called_from_swap) {
+        if (multi_tx) {
+            // not implemented
+            return io_send_sw(SW_BAD_STATE);
+        }
+
         if (G_swap_response_ready) {
             // Safety against trying to make the app sign multiple TX
             // This code should never be triggered as the app is supposed to exit after

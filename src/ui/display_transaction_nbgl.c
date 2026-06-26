@@ -32,6 +32,7 @@ static char g_address_title[G_ADDRESS_TITLE_LEN];
 
 static char g_transaction_title[64];
 static char g_transaction_finish_title[64];
+static char g_multi_tx_str[64];
 
 static nbgl_contentTagValue_t pairs[3 + MAX_HINTS];
 static nbgl_contentTagValueList_t pairList;
@@ -101,7 +102,7 @@ static void ui_start_review() {
         pairIndex++;
     }
 
-    if (G_context.tx_info.transaction.has_payload && G_context.tx_info.transaction.is_blind) {
+    if (G_context.tx_info.messages[G_context.tx_info.message_count - 1].has_payload && G_context.tx_info.transaction.is_blind) {
         pairs[pairIndex].item = "Payload";
         pairs[pairIndex].value = g_payload;
         pairIndex++;
@@ -118,11 +119,16 @@ static void ui_start_review() {
         op |= BLIND_OPERATION;
     }
 
+    bool multi_tx_str = G_context.tx_info.multi_tx && G_context.tx_info.message_count > 1;
+    if (multi_tx_str) {
+        snprintf(g_multi_tx_str, sizeof(g_multi_tx_str), "Multi-transaction (%d of %d)", G_context.tx_info.message_count, G_context.tx_info.expected_message_count);
+    }
+
     nbgl_useCaseReview(op,
                        &pairList,
                        &ICON_APP_HOME,
                        g_transaction_title,
-                       NULL,
+                       multi_tx_str ? g_multi_tx_str : NULL,
                        g_transaction_finish_title,
                        on_review_choice);
 }

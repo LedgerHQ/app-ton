@@ -56,8 +56,15 @@ typedef struct {
     uint8_t raw_tx[MAX_TRANSACTION_LEN];  /// raw transaction serialized
     size_t raw_tx_len;                    /// length of raw transaction
     transaction_t transaction;            /// structured transaction
+    uint8_t expected_message_count;
+    uint8_t message_count;
+    message_t messages[MAX_MESSAGES];
     uint8_t m_hash[HASH_LEN];             /// message hash digest
     uint8_t signature[SIG_LEN];           /// transaction signature
+    bool multi_tx;
+    bool have_tx_params;
+    bool message_active;
+    bool final_message;
 } transaction_ctx_t;
 
 /**

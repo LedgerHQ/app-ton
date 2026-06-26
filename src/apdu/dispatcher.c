@@ -72,7 +72,8 @@ int apdu_dispatcher(const command_t *cmd) {
 
             return handler_get_public_key(cmd->p2, &buf, (bool) cmd->p1);
         case SIGN_TX:
-            if (cmd->p1 != P1_NONE) {
+            if (!(cmd->p1 == P1_NONE ||
+                ((cmd->p1 & P1_MULTI_TX) && !(cmd->p1 & ~(P1_MULTI_TX | P1_FIRST | P1_MORE))))) {
                 return io_send_sw(SW_WRONG_P1P2);
             }
 
@@ -92,7 +93,7 @@ int apdu_dispatcher(const command_t *cmd) {
             buf.size = cmd->lc;
             buf.offset = 0;
 
-            return handler_sign_tx(&buf, (bool) (cmd->p2 & P2_FIRST), (bool) (cmd->p2 & P2_MORE));
+            return handler_sign_tx(&buf, (bool) (cmd->p2 & P2_FIRST), (bool) (cmd->p2 & P2_MORE), (bool) (cmd->p1 & P1_MULTI_TX), (bool) (cmd->p1 & P1_FIRST), (bool) (cmd->p1 & P1_MORE));
         case GET_ADDRESS_PROOF:
             if (cmd->p1 != P1_CONFIRM) {
                 return io_send_sw(SW_WRONG_P1P2);
