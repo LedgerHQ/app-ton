@@ -31,12 +31,12 @@ bool display_transaction(char *g_operation,
     // Amount
     memset(g_amount, 0, g_amount_len);
     if ((G_context.tx_info.transaction.send_mode & 128) != 0) {
-        snprintf(g_amount, g_amount_len, "ALL YOUR TONs");
+        snprintf(g_amount, g_amount_len, "ALL YOUR GRAMs");
     } else {
         if (!amountToString(G_context.tx_info.transaction.value_buf,
                             G_context.tx_info.transaction.value_len,
                             EXPONENT_SMALLEST_UNIT,
-                            "TON",
+                            "GRAM",
                             g_amount,
                             g_amount_len)) {
             io_send_sw(SW_DISPLAY_AMOUNT_FAIL);

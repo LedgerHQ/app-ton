@@ -21,7 +21,7 @@
         return false; \
     }
 
-int roffset(uint8_t* data, size_t data_len, uint8_t c) {
+int roffset(uint8_t *data, size_t data_len, uint8_t c) {
     for (int i = data_len - 1; i >= 0; i--) {
         if (data[i] == c) {
             return i;
@@ -30,7 +30,7 @@ int roffset(uint8_t* data, size_t data_len, uint8_t c) {
     return -1;
 }
 
-void encode_domain(BitString_t* self, uint8_t* domain, size_t domain_len) {
+void encode_domain(BitString_t *self, uint8_t *domain, size_t domain_len) {
     size_t cur_len = domain_len;
     int doffset;
     while ((doffset = roffset(domain, cur_len, '.')) >= 0) {
@@ -42,11 +42,11 @@ void encode_domain(BitString_t* self, uint8_t* domain, size_t domain_len) {
     BitString_storeUint(self, 0, 8);
 }
 
-void encode_text(BitString_t* self,
-                 uint8_t* data,
+void encode_text(BitString_t *self,
+                 uint8_t *data,
                  size_t data_len,
-                 CellRef_t* out_ref,
-                 bool* out_has_ref) {
+                 CellRef_t *out_ref,
+                 bool *out_has_ref) {
     uint8_t storeMax = (1023 - self->data_cursor) / 8;
     if (data_len > storeMax) {
         BitString_t inner;
@@ -65,7 +65,7 @@ void encode_text(BitString_t* self,
     }
 }
 
-bool sign_data_deserialize(buffer_t* buf, sign_data_ctx_t* ctx) {
+bool sign_data_deserialize(buffer_t *buf, sign_data_ctx_t *ctx) {
     SAFE(buffer_read_u32(buf, &ctx->schema_crc, BE));
     SAFE(buffer_read_u64(buf, &ctx->timestamp, BE));
 
@@ -80,10 +80,10 @@ bool sign_data_deserialize(buffer_t* buf, sign_data_ctx_t* ctx) {
             if (len > MAX_PLAINTEXT_LENGTH) {
                 return false;
             }
-            uint8_t* data;
+            uint8_t *data;
             SAFE(buffer_read_ref(buf, &data, len));
             SAFE(check_ascii(data, len));
-            add_hint_text(&ctx->hints, "Text", (char*) data, len);
+            add_hint_text(&ctx->hints, "Text", (char *) data, len);
             bool has_ref;
             encode_text(&bits, data, len, &refs[cur_ref], &has_ref);
             if (has_ref) {
@@ -115,7 +115,7 @@ bool sign_data_deserialize(buffer_t* buf, sign_data_ctx_t* ctx) {
                 if (domain_len > MAX_APP_DATA_DOMAIN_LENGTH) {
                     return false;
                 }
-                uint8_t* domain;
+                uint8_t *domain;
                 SAFE(buffer_read_ref(buf, &domain, domain_len));
                 SAFE(check_ascii(domain, domain_len));
                 BitString_t inner;
@@ -124,7 +124,7 @@ bool sign_data_deserialize(buffer_t* buf, sign_data_ctx_t* ctx) {
                 hash_Cell(&inner, NULL, 0, &refs[cur_ref]);
                 cur_ref++;
                 BitString_storeBit(&bits, 1);
-                add_hint_text(&ctx->hints, "App domain", (char*) domain, domain_len);
+                add_hint_text(&ctx->hints, "App domain", (char *) domain, domain_len);
             } else {
                 BitString_storeBit(&bits, 0);
             }

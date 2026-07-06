@@ -13,7 +13,7 @@
 #include "format.h"
 #include "common/myformat.h"
 
-void add_hint_text(HintHolder_t* hints, const char* title, const char* text, size_t text_len) {
+void add_hint_text(HintHolder_t *hints, const char *title, const char *text, size_t text_len) {
     // Configure
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryItemString;
@@ -24,7 +24,7 @@ void add_hint_text(HintHolder_t* hints, const char* title, const char* text, siz
     hints->hints_count++;
 }
 
-void add_hint_hash(HintHolder_t* hints, const char* title, uint8_t* data) {
+void add_hint_hash(HintHolder_t *hints, const char *title, uint8_t *data) {
     // Configure
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryHash;
@@ -34,7 +34,7 @@ void add_hint_hash(HintHolder_t* hints, const char* title, uint8_t* data) {
     hints->hints_count++;
 }
 
-void add_hint_hex(HintHolder_t* hints, const char* title, uint8_t* data, uint8_t data_len) {
+void add_hint_hex(HintHolder_t *hints, const char *title, uint8_t *data, uint8_t data_len) {
     // Configure
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryHex;
@@ -47,10 +47,10 @@ void add_hint_hex(HintHolder_t* hints, const char* title, uint8_t* data, uint8_t
     hints->hints_count++;
 }
 
-void add_hint_amount(HintHolder_t* hints,
-                     const char* title,
-                     const char* ticker,
-                     uint8_t* value,
+void add_hint_amount(HintHolder_t *hints,
+                     const char *title,
+                     const char *ticker,
+                     uint8_t *value,
                      uint8_t value_len,
                      uint8_t decimals) {
     // Configure
@@ -67,7 +67,7 @@ void add_hint_amount(HintHolder_t* hints,
     hints->hints_count++;
 }
 
-void add_hint_address(HintHolder_t* hints, const char* title, address_t address, bool bounceable) {
+void add_hint_address(HintHolder_t *hints, const char *title, address_t address, bool bounceable) {
     // Configure
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryAddress;
@@ -78,7 +78,7 @@ void add_hint_address(HintHolder_t* hints, const char* title, address_t address,
     hints->hints_count++;
 }
 
-void add_hint_number(HintHolder_t* hints, const char* title, uint64_t number) {
+void add_hint_number(HintHolder_t *hints, const char *title, uint64_t number) {
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryNumber;
     hints->hints[hints->hints_count].number = number;
@@ -87,7 +87,7 @@ void add_hint_number(HintHolder_t* hints, const char* title, uint64_t number) {
     hints->hints_count++;
 }
 
-void add_hint_bool(HintHolder_t* hints, const char* title, bool value) {
+void add_hint_bool(HintHolder_t *hints, const char *title, bool value) {
     hints->hints[hints->hints_count].title = title;
     hints->hints[hints->hints_count].kind = SummaryBool;
     hints->hints[hints->hints_count].bool_value = value;
@@ -96,7 +96,7 @@ void add_hint_bool(HintHolder_t* hints, const char* title, bool value) {
     hints->hints_count++;
 }
 
-int print_string(const char* in, char* out, size_t out_length) {
+int print_string(const char *in, char *out, size_t out_length) {
     strncpy(out, in, out_length);
     int rc = (out[--out_length] != '\0');
     if (rc) {
@@ -110,7 +110,7 @@ int print_string(const char* in, char* out, size_t out_length) {
     return rc;
 }
 
-int print_sized_string(const SizedString_t* string, char* out, size_t out_length) {
+int print_sized_string(const SizedString_t *string, char *out, size_t out_length) {
     size_t len = out_length < string->length ? out_length : string->length;
     strncpy(out, string->string, len);
     if (string->length < out_length) {
@@ -126,11 +126,11 @@ int print_sized_string(const SizedString_t* string, char* out, size_t out_length
     }
 }
 
-void print_hint(HintHolder_t* hints,
+void print_hint(HintHolder_t *hints,
                 uint16_t index,
-                char* title,
+                char *title,
                 size_t title_len,
-                char* body,
+                char *body,
                 size_t body_len) {
     Hint_t hint = hints->hints[index];
 
